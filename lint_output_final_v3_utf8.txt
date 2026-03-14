@@ -1,0 +1,183 @@
+﻿bun : $ eslint
+At line:1 char:1
++ bun run lint > lint_output_final_v3.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ eslint:String) [], RemoteExcept 
+   ion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\change-requests\page.tsx
+  3:10  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\defense\[id]\page.tsx
+  55:18  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\page.tsx
+  3:65  warning  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\proposals\[id]\page.tsx
+   15:10  warning  'Proposal' is defined but never used              @typescript-eslint/no-unused-vars
+   25:33  warning  'Plus' is defined but never used                  @typescript-eslint/no-unused-vars
+   45:5   warning  'Dialog' is defined but never used                @typescript-eslint/no-unused-vars
+   46:5   warning  'DialogContent' is defined but never used         @typescript-eslint/no-unused-vars
+   47:5   warning  'DialogHeader' is defined but never used          @typescript-eslint/no-unused-vars
+   48:5   warning  'DialogTitle' is defined but never used           @typescript-eslint/no-unused-vars
+   49:5   warning  'DialogTrigger' is defined but never used         @typescript-eslint/no-unused-vars
+   87:11  warning  'queryClient' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  140:18  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  151:21  warning  'customTema' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  161:18  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  173:18  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  184:18  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\sempro\[id]\page.tsx
+  54:18  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(admin)\admin\themes\page.tsx
+  2:10  warning  'PageHeader' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\defense\[id]\page.tsx
+   7:10  warning  'Badge' is defined but never used  @typescript-eslint/no-unused-vars
+  49:18  warning  '_err' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\guidance\[id]\page.tsx
+  35:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\guidance\page.tsx
+  11:19  warning  'ArrowLeft' is defined but never used      @typescript-eslint/no-unused-vars
+  11:63  warning  'User' is defined but never used           @typescript-eslint/no-unused-vars
+  24:5   warning  'DialogTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\page.tsx
+  4:29  warning  'CardHeader' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\proposals\[id]\page.tsx
+  16:32  warning  'BookOpen' is defined but never used    @typescript-eslint/no-unused-vars
+  16:62  warning  'LucideIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  18:10  warning  'Proposal' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\proposals\page.tsx
+  3:10  warning  'useEffect' is defined but never used   @typescript-eslint/no-unused-vars
+  6:29  warning  'CardHeader' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(lecturer)\lecturer\sempro\[id]\page.tsx
+  39:18  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\change-request\page.tsx
+  25:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\defense\page.tsx
+   8:65  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  76:18  warning  '_error' is defined but never used       @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\guidance\page.tsx
+   5:10  warning  'useMyThesis' is defined but never used    @typescript-eslint/no-unused-vars
+   7:10  warning  'Proposal' is defined but never used       @typescript-eslint/no-unused-vars
+   9:29  warning  'CardHeader' is defined but never used     @typescript-eslint/no-unused-vars
+   9:41  warning  'CardTitle' is defined but never used      @typescript-eslint/no-unused-vars
+  16:5   warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+  17:5   warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+  18:5   warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+  19:5   warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+  20:5   warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+  23:82  warning  'Calendar' is defined but never used       @typescript-eslint/no-unused-vars
+  97:31  warning  'b' is defined but never used              @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\page.tsx
+    5:5   warning  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+    5:59  warning  'Lock' is defined but never used     @typescript-eslint/no-unused-vars
+  439:77  warning  'b' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\proposal\page.tsx
+    3:10  warning  'useState' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   15:39  warning  'Proposal' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   21:10  warning  'Alert' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   67:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  141:86  warning  'b' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  312:34  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\proposal\page.tsx:312:34
+  310 |                                 )}
+  311 |
+> 312 |                                 {form.watch("tema") === "Lainnya" && (
+      |                                  ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  313 |                                     <FormField
+  314 |                                         control={form.control}
+  315 |                                         name="customTema"  react-hooks/incompatible-library
+
+D:\Project\siakad\siakad-skripsi-frontend\src\app\(student)\student\sempro\page.tsx
+  57:18  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\components\shared\LecturerNavbar.tsx
+  27:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\components\shared\Navbar.tsx
+  28:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\defense\components\DefenseCard.tsx
+    7:35  warning  'User' is defined but never used                  @typescript-eslint/no-unused-vars
+   16:40  warning  'showStudent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  127:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\defense\components\DefenseTable.tsx
+  39:49  warning  '_sort' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\guidance\components\GuidanceLogForm.tsx
+  36:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\guidance\hooks\use-guidance.ts
+  3:10  warning  'GuidanceLog' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\layout\components\DashboardLayout.tsx
+  3:20  warning  'useMemo' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\layout\components\Header.tsx
+  3:8   warning  'Link' is defined but never used           @typescript-eslint/no-unused-vars
+  5:10  warning  'GraduationCap' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\layout\components\Sidebar.tsx
+  22:34  warning  'roleBanner' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\proposal\components\ProposalForm.tsx
+   24:51  warning  'isLoading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   26:42  warning  'loadingThesis' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   29:9   warning  The 'themes' logical expression could make the dependencies of useEffect Hook (at line 54) change on every render. To fix this, wrap the initialization of 'themes' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+   67:14  warning  '_error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  197:18  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\proposal\components\ProposalForm.tsx:197:18
+  195 |                 )}
+  196 |
+> 197 |                 {form.watch("tema") === "Lainnya" && (
+      |                  ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  198 |                   <FormField<ProposalFormData>
+  199 |                     control={form.control}
+  200 |                     name="customTema"  react-hooks/incompatible-library
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\proposal\components\ProposalStatusCard.tsx
+  77:51  warning  '_b' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\proposal\components\ProposalTable.tsx
+  56:3  warning  '_sortOrder' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\sempro\components\SemproCard.tsx
+   16:38  warning  'showStudent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  127:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\sempro\components\SemproTable.tsx
+  48:3  warning  '_sortOrder' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\skripsi-tema\components\TemaTable.tsx
+  14:10  warning  'Badge' is defined but never used       @typescript-eslint/no-unused-vars
+  36:3   warning  '_sortOrder' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\siakad\siakad-skripsi-frontend\src\features\skripsi-tema\hooks\useTemaMutation.ts
+  6:23  warning  'Theme' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 80 problems (0 errors, 80 warnings)
+
