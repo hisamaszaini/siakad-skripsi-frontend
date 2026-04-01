@@ -1,12 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { ProposalSchema, ProposalFormData } from "@/schemas";
-import { useMyThesisQuery, useThemesQuery } from "../hooks/useProposalQueries";
-import { useSubmitProposalMutation } from "../hooks/useProposalMutation";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useProposalForm } from "../hooks/useProposalForm";
 import { Button } from "@/components/ui/button";
 import { SingleSelect } from "@/components/ui/single-select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -17,58 +11,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { proposalService } from "../services/proposal.service";
 import { Loader2, GraduationCap, ArrowLeft, Info } from "lucide-react";
+import { Lecturer, Theme, ProposalFormData } from "@/types";
 import { useRouter } from "next/navigation";
-import { Lecturer, Theme } from "@/types";
 
 export function ProposalForm() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { mutateAsync: submitProposal, isPending: isLoading } = useSubmitProposalMutation();
-  const { data: themesData, isLoading: loadingThemes } = useThemesQuery(user?.nim || "");
-  const { data: thesisResult, isLoading: loadingThesis } = useMyThesisQuery();
-  const [isRevision, setIsRevision] = useState(false);
+  const { 
+    form, 
+    isRevision, 
+    loadingThemes, 
+    loadingThesis, 
+    themes, 
+    thesis, 
+    onSubmit 
+  } = useProposalForm();
 
-  const themes = themesData || [];
-  const thesis = thesisResult?.current;
-
-  const form = useForm<ProposalFormData>({
-    resolver: zodResolver(ProposalSchema),
-    defaultValues: {
-      judul: "",
-      tema: "",
-      customTema: "",
-      sks_total: 0,
-      pembimbing_usulan_id: "",
-    },
-  });
-
-  useEffect(() => {
-    if (thesis && thesis.status === "REJECTED") {
-      setIsRevision(true);
-      form.reset({
-        judul: thesis.judul,
-        tema: (thesis.tema && themes.some((t: Theme) => t.name === thesis.tema)) ? thesis.tema : "Lainnya",
-        customTema: themes.some((t: Theme) => t.name === thesis.tema) ? "" : (thesis.tema || ""),
-        sks_total: thesis.sks_total,
-        pembimbing_usulan_id: thesis.pembimbing_usulan_id || "",
-      });
-    }
-  }, [thesis, form, themes]);
-
-  async function onSubmit(values: ProposalFormData) {
-    const tema = (values.tema === "Lainnya" ? values.customTema : values.tema) || "";
-    const pembimbingId = values.pembimbing_usulan_id;
-    try {
-      await submitProposal({
-        judul: values.judul,
-        tema,
-        sks_total: values.sks_total,
-        pembimbing_usulan_id: pembimbingId || undefined,
-      });
-      router.push("/student");
-    } catch (_error) {
-      // Error is handled by the mutation toast
-    }
+  if (loadingThesis) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 space-y-4">
+        <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
+        <p className="text-slate-400 font-bold tracking-tight animate-pulse uppercase text-[10px]">Menyelaraskan Data Usulan...</p>
+      </div>
+    );
   }
 
   return (

@@ -74,7 +74,7 @@ export function ProposalDetailCard({ proposal }: ProposalDetailCardProps) {
           <div className="space-y-4 pt-4 border-t border-slate-50">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 block">Dosen Pembimbing</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[...proposal.supervisors].sort((a, _b) => a.role === "MAIN" ? -1 : 1).map((s, idx) => (
+              {[...proposal.supervisors].sort((a, b) => a.role === "MAIN" ? -1 : (b.role === "MAIN" ? 1 : 0)).map((s, idx) => (
                 <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-indigo-100 transition-colors">
                   <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
                     <span className="text-indigo-600 font-black text-xs">

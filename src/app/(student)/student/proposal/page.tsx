@@ -1,27 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { ProposalSchema, ProposalFormData } from "@/schemas";
-import { useThemesQuery, useMyThesisQuery, useSubmitProposalMutation } from "@/features/proposal";
-import { proposalService } from "@/features/proposal/services/proposal.service";
+import { useProposalDashboard } from "@/features/proposal";
 import { Button } from "@/components/ui/button";
-import { SingleSelect } from "@/components/ui/single-select";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { PageTitle } from "@/components/ui/page-title";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, Clock, Loader2, XCircle, GraduationCap, ArrowLeft, Info, LucideIcon } from "lucide-react";
-import { Lecturer, Supervisor, Theme, Proposal } from "@/types";
+import { AlertCircle, CheckCircle2, Clock, Loader2, XCircle, GraduationCap, ArrowLeft, Info, LucideIcon, FileText, Check } from "lucide-react";
+import { Supervisor, Theme } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Alert } from "@/components/ui/alert";
-import { toast } from "sonner";
-import { PageTitle } from "@/components/ui/page-title";
-
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { SingleSelect } from "@/components/ui/single-select";
 
 const STATUS_CONFIG: Record<string, { label: string; icon: LucideIcon; variant: "default" | "destructive" | "outline" | "secondary" | null | undefined }> = {
     SUBMITTED: { label: "Menunggu Verifikasi Pembimbing", icon: Clock, variant: "secondary" },
@@ -33,42 +25,16 @@ const STATUS_CONFIG: Record<string, { label: string; icon: LucideIcon; variant: 
 
 export default function ProposalPage() {
     const router = useRouter();
-    const { data: thesis, isLoading: loadingThesis } = useMyThesisQuery();
-    const { data: themesData, isLoading: loadingThemes } = useThemesQuery();
-    const themes = themesData || [];
-    const { mutateAsync: submitProposal, isPending: loading } = useSubmitProposalMutation();
-
-    const form = useForm<ProposalFormData>({
-        resolver: zodResolver(ProposalSchema),
-        defaultValues: {
-            judul: "",
-            tema: "",
-            customTema: "",
-            sks_total: 0,
-            pembimbing_usulan_id: "",
-        },
-    });
-
-    async function onSubmit(values: ProposalFormData) {
-        try {
-            const tema = values.tema === "Lainnya" ? values.customTema : values.tema;
-
-            if (!tema) {
-                toast.error("Tema/topik penelitian wajib diisi.");
-                return;
-            }
-
-            await submitProposal({
-                judul: values.judul,
-                tema: tema,
-                sks_total: values.sks_total,
-                pembimbing_usulan_id: values.pembimbing_usulan_id || undefined,
-            });
-            router.push("/student");
-        } catch (error) {
-            // Error is handled by mutation toast
-        }
-    }
+    const {
+        thesis,
+        loadingThesis,
+        themes,
+        loadingThemes,
+        loading,
+        form,
+        handleSearchLecturers,
+        onSubmit
+    } = useProposalDashboard();
 
     if (loadingThesis) {
         return (
@@ -120,28 +86,28 @@ export default function ProposalPage() {
                 <Card className="border-none shadow-sm bg-white rounded-3xl overflow-hidden">
                     <CardHeader className="p-8 pb-0">
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Judul Skripsi</span>
-                        <CardTitle className="text-2xl font-black text-slate-900 leading-tight">
+                        <CardTitle className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
                             &quot;{currentThesis.judul}&quot;
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-100">
+                            <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200">
                                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 block">Tema / Topik</span>
                                 <p className="text-slate-900 font-bold">{currentThesis.tema || "-"}</p>
                             </div>
-                            <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-100">
+                            <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200">
                                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 block">Total SKS</span>
                                 <p className="text-slate-900 font-bold">{currentThesis.sks_total} SKS</p>
                             </div>
                         </div>
 
-                        {currentThesis.status === "PLOTTED" && currentThesis.supervisors && currentThesis.supervisors.length > 0 ? (
-                            <div className="space-y-4 pt-4 border-t border-slate-50">
+                        {(currentThesis.status != "SUBMITTED" && currentThesis.status != "REJECTED" && currentThesis.status != "REVISION") && currentThesis.supervisors && currentThesis.supervisors.length > 0 ? (
+                            <div className="space-y-4 pt-4 border-t border-slate-200">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 block">Dosen Pembimbing</span>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {[...(currentThesis.supervisors || [])].sort((a, b) => a.role === "MAIN" ? -1 : 1).map((s: Supervisor, idx: number) => (
-                                        <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-indigo-100 transition-colors">
+                                    {[...(currentThesis.supervisors || [])].sort((a, b) => a.role === "MAIN" ? -1 : (b.role === "MAIN" ? 1 : 0)).map((s: Supervisor, idx: number) => (
+                                        <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-100 transition-colors">
                                             <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
                                                 <span className="text-indigo-600 font-black text-xs">
                                                     {s.nama.trim().charAt(0).toUpperCase()}
@@ -149,7 +115,7 @@ export default function ProposalPage() {
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-[9px] text-slate-400 font-black uppercase tracking-wide mb-0.5">
-                                                    {s.role === "MAIN" ? "Pembimbing 1" : "Pembimbing 2"}
+                                                    {s.role === "MAIN" ? "Pembimbing Utama" : "Pembimbing Pendamping"}
                                                 </p>
                                                 <p className="text-sm font-bold text-slate-900 truncate">{s.nama.trim()}</p>
                                             </div>
@@ -158,7 +124,7 @@ export default function ProposalPage() {
                                 </div>
                             </div>
                         ) : currentThesis.nama_calon_pembimbing?.trim() ? (
-                            <div className="pt-4 border-t border-slate-50">
+                            <div className="pt-4 border-t border-slate-200">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-4 block">Usulan Calon Pembimbing</span>
                                 <div className="flex items-center gap-4 p-5 rounded-2xl bg-amber-50/50 border border-amber-100">
                                     <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0 text-amber-600 font-black text-lg">
@@ -189,7 +155,7 @@ export default function ProposalPage() {
                         <div className="pt-6 flex justify-end">
                             <Button
                                 onClick={() => router.push("/student")}
-                                variant="ghost"
+                                variant="outline"
                                 className="font-bold text-slate-400 hover:text-slate-900 transition-colors"
                             >
                                 Kembali ke Dashboard
@@ -198,22 +164,34 @@ export default function ProposalPage() {
                     </CardContent>
                 </Card>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-4">
-                    <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-bold text-amber-800 text-sm">Tidak bisa mengajukan ulang?</p>
-                        <p className="text-amber-700 text-sm mt-1">
-                            Selama proposal masih dalam proses (status bukan DITOLAK), kamu tidak bisa mengajukan proposal baru.
-                            Hubungi admin program studi jika ada kebutuhan mendesak.
-                        </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-4">
+                        <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="font-bold text-amber-800 text-sm">Informasi Pengajuan</p>
+                            <p className="text-amber-700 text-sm mt-1">
+                                Selama proposal masih dalam proses (status bukan DITOLAK), kamu tidak bisa mengajukan proposal baru.
+                            </p>
+                        </div>
                     </div>
+                    {(currentThesis.status !== 'REJECTED' && currentThesis.status !== 'PLOTTED') && (
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 flex gap-4">
+                            <Info className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-bold text-indigo-800 text-sm">Kebijakan Perubahan</p>
+                                <p className="text-indigo-700 text-sm mt-1">
+                                    Usulan yang sudah di-ACC (Disetujui/Plotting) tidak diperkenankan untuk mengganti tema penelitian.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="w-11/12 mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <PageTitle title="Pengajuan Usulan Skripsi" />
             {/* Minimalist Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -236,8 +214,34 @@ export default function ProposalPage() {
                 </Button>
             </div>
 
+            {/* Requirements Info Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-200">
+                {[
+                    { label: "Minimal SKS", value: "120 SKS", icon: FileText, color: "blue" },
+                    { label: "Minimal IPK", value: "2.75", icon: GraduationCap, color: "emerald" },
+                    { label: "Prasyarat", value: "Lulus Metode Penelitian", icon: CheckCircle2, color: "indigo" },
+                    { label: "KRS Aktif", value: "Program MK Skripsi", icon: Check, color: "orange" },
+                ].map((item, idx) => (
+                    <div key={idx} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 flex items-center gap-4 group hover:border-indigo-100 transition-all hover:shadow-md">
+                        <div className={cn(
+                            "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                            item.color === "blue" ? "bg-blue-50 text-blue-600" :
+                                item.color === "emerald" ? "bg-emerald-50 text-emerald-600" :
+                                    item.color === "orange" ? "bg-orange-50 text-orange-600" :
+                                        "bg-indigo-50 text-indigo-600"
+                        )}>
+                            <item.icon className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{item.label}</p>
+                            <p className="text-sm font-black text-slate-900">{item.value}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
             <Card className="border-none shadow-2xl shadow-slate-200/60 bg-white rounded-[3rem] overflow-hidden">
-                <CardHeader className="p-10 pb-6 border-b border-slate-50">
+                <CardHeader className="p-10 pb-6 border-b border-slate-200">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="h-1 w-6 bg-indigo-600 rounded-full" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thesis Initiation Form</span>
@@ -258,7 +262,7 @@ export default function ProposalPage() {
                                             <Textarea
                                                 placeholder="Tuliskan judul lengkap skripsi Anda di sini..."
                                                 {...field}
-                                                className="min-h-[120px] rounded-[1.5rem] border-slate-100 bg-slate-50/50 p-6 font-bold text-slate-900 focus-visible:ring-indigo-600/20 focus-visible:border-indigo-600 transition-all leading-relaxed"
+                                                className="min-h-[120px] rounded-[1.5rem] border-slate-200 bg-slate-50/50 p-6 font-bold text-slate-900 focus-visible:ring-indigo-600/20 focus-visible:border-indigo-600 transition-all leading-relaxed"
                                             />
                                         </FormControl>
                                         <FormDescription className="text-[10px] font-bold text-slate-400 ml-1">Gunakan Bahasa Indonesia yang formal dan baku.</FormDescription>
@@ -270,7 +274,7 @@ export default function ProposalPage() {
                             <div className="space-y-6">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Pilihan Tema / Topik <span className="text-red-500">*</span></Label>
                                 {loadingThemes ? (
-                                    <div className="flex items-center gap-3 p-8 border border-slate-50 rounded-[2rem] bg-slate-50/30 animate-pulse">
+                                    <div className="flex items-center gap-3 p-8 border border-slate-200 rounded-[2rem] bg-slate-50/30 animate-pulse">
                                         <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
                                         <span className="text-xs font-black text-slate-400 tracking-widest uppercase">Sinkronisasi Tema...</span>
                                     </div>
@@ -283,7 +287,7 @@ export default function ProposalPage() {
                                                 <FormControl>
                                                     <RadioGroup
                                                         onValueChange={field.onChange}
-                                                        defaultValue={field.value}
+                                                        value={field.value}
                                                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                                                     >
                                                         {themes.map((theme: Theme) => (
@@ -291,7 +295,10 @@ export default function ProposalPage() {
                                                                 <FormControl>
                                                                     <RadioGroupItem value={theme.name} className="peer sr-only" />
                                                                 </FormControl>
-                                                                <FormLabel className="flex items-center p-5 rounded-2xl bg-white border border-slate-100 font-bold text-sm cursor-pointer peer-data-[state=checked]:border-indigo-600 peer-data-[state=checked]:bg-indigo-50 peer-data-[state=checked]:text-indigo-900 transition-all hover:border-indigo-200">
+                                                                <FormLabel className={cn(
+                                                                    "flex items-center p-5 rounded-2xl bg-white border border-slate-200 font-bold text-sm cursor-pointer transition-all hover:border-indigo-200",
+                                                                    field.value === theme.name && "border-indigo-600 bg-indigo-50 text-indigo-900"
+                                                                )}>
                                                                     {theme.name}
                                                                 </FormLabel>
                                                             </FormItem>
@@ -300,7 +307,10 @@ export default function ProposalPage() {
                                                             <FormControl>
                                                                 <RadioGroupItem value="Lainnya" className="peer sr-only" />
                                                             </FormControl>
-                                                            <FormLabel className="flex items-center p-5 rounded-2xl bg-white border border-slate-100 font-bold text-sm cursor-pointer peer-data-[state=checked]:border-indigo-600 peer-data-[state=checked]:bg-indigo-50 peer-data-[state=checked]:text-indigo-900 transition-all hover:border-indigo-200">
+                                                            <FormLabel className={cn(
+                                                                "flex items-center p-5 rounded-2xl bg-white border border-slate-200 font-bold text-sm cursor-pointer transition-all hover:border-indigo-200",
+                                                                field.value === "Lainnya" && "border-indigo-600 bg-indigo-50 text-indigo-900"
+                                                            )}>
                                                                 Tema Lainnya
                                                             </FormLabel>
                                                         </FormItem>
@@ -346,7 +356,7 @@ export default function ProposalPage() {
                                                         type="number"
                                                         placeholder="0"
                                                         {...field}
-                                                        className="h-14 rounded-[1.5rem] border-slate-100 bg-slate-50/50 px-6 font-black text-slate-900 focus-visible:ring-indigo-600/20"
+                                                        className="h-14 rounded-[1.5rem] border-slate-200 bg-slate-50/50 px-6 font-black text-slate-900 focus-visible:ring-indigo-600/20"
                                                         onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                                                     />
                                                     <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest">SKS</div>
@@ -368,18 +378,10 @@ export default function ProposalPage() {
                                                 <SingleSelect
                                                     value={String(field.value ?? "")}
                                                     onChange={field.onChange}
-                                                    onSearch={async (query) => {
-                                                        if (query.length < 2) return [];
-                                                        const res = await proposalService.searchLecturers(query);
-                                                        return (res.data || []).map((t: Lecturer) => ({
-                                                            label: t.nama,
-                                                            value: String(t.nik),
-                                                            description: t.nidn ? `NIDN: ${t.nidn}` : `NIK: ${t.nik}`
-                                                        }));
-                                                    }}
+                                                    onSearch={handleSearchLecturers}
                                                     placeholder="Cari Dosen..."
                                                     searchPlaceholder="Ketik Nama atau NIK..."
-                                                    className="h-14 rounded-[1.5rem] border-slate-100 bg-slate-50/50"
+                                                    className="h-14 rounded-[1.5rem] border-slate-200 bg-slate-50/50"
                                                 />
                                             </FormControl>
                                             <FormDescription className="text-[9px] font-bold text-slate-400 ml-1">Dosen yang telah Anda hubungi / sepakati.</FormDescription>
@@ -391,11 +393,16 @@ export default function ProposalPage() {
 
                             <div className="p-8 rounded-[2rem] bg-indigo-50 border border-indigo-100 flex gap-6 text-indigo-900 relative overflow-hidden group">
                                 <Info className="h-8 w-8 shrink-0 text-indigo-600" />
-                                <div className="space-y-1 relative z-10">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 opacity-60">Pernyataan Kejujuran</p>
-                                    <p className="text-xs font-bold leading-relaxed italic">
-                                        Dengan mengklik submit, saya menyatakan bahwa data yang saya masukkan adalah benar and judul yang diajukan bukan merupakan hasil plagiasi.
-                                    </p>
+                                <div className="space-y-2 relative z-10">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 opacity-60">Pernyataan & Kebijakan</p>
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold leading-relaxed italic">
+                                            • Dengan mengklik submit, saya menyatakan data yang dimasukkan adalah benar & bukan plagiasi.
+                                        </p>
+                                        <p className="text-xs font-black leading-relaxed text-indigo-600">
+                                            • PERHATIAN: Usulan yang sudah di-ACC tidak diperkenankan mengganti tema/topik.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 

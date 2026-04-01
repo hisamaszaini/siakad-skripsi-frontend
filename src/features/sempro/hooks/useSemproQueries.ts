@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { semproService, SemproParams } from "../services/sempro.service";
 import { SemproRegistration, PaginatedResponse, ApiResponse } from "@/types";
 import { AxiosResponse } from "axios";
@@ -16,6 +16,7 @@ export const useAllSemproQuery = (params?: SemproParams, role?: "ADMIN" | "LECTU
   return useQuery<PaginatedResponse<SemproRegistration>>({
     queryKey: [...semproKeys.list(params), role],
     queryFn: () => semproService.listSempro(params, role).then((res: AxiosResponse<ApiResponse<PaginatedResponse<SemproRegistration>>>) => res.data.data),
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -31,5 +32,6 @@ export const useActiveSemproQuery = () => {
   return useQuery({
     queryKey: semproKeys.active(),
     queryFn: () => semproService.getMySempro().then((res: AxiosResponse<ApiResponse<SemproRegistration>>) => res.data.data),
+    staleTime: 1000 * 60 * 5, // 5 menit
   });
 };

@@ -1,64 +1,30 @@
 "use client"
 
-import { useState } from "react";
+import { useSemproRegistration } from "@/features/sempro";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { BookOpen, FileUp, Calendar as CalendarIcon, Loader2, ArrowLeft, GraduationCap, ShieldCheck, Info, Eye, X, FileText, CheckCircle2, Clock, MapPin, Users, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PageTitle } from "@/components/ui/page-title";
 
-import { Supervisor } from "@/types";
-import { useMyThesisQuery } from "@/features/proposal";
-import { useActiveSemproQuery, useRegisterSemproMutation } from "@/features/sempro";
-
 export default function SemproRegistrationPage() {
     const router = useRouter();
-    const { data: thesis, isLoading: loadingThesis } = useMyThesisQuery();
-    const { data: sempro, isLoading: loadingSempro } = useActiveSemproQuery();
-    const { mutateAsync: register, isPending: loading } = useRegisterSemproMutation();
-    const [file, setFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-    const isAcc = (thesis?.current?.supervisors?.length ?? 0) > 0 && thesis?.current?.supervisors?.every((p: Supervisor) => p.acc_sempro);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            if (selectedFile.type !== 'application/pdf') {
-                toast.error('File harus dalam format PDF');
-                return;
-            }
-            if (selectedFile.size > 5 * 1024 * 1024) {
-                toast.error('Ukuran file maksimal 5MB');
-                return;
-            }
-            setFile(selectedFile);
-            const url = URL.createObjectURL(selectedFile);
-            setPreviewUrl(url);
-        }
-    };
-
-    const removeFile = () => {
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-        setFile(null);
-        setPreviewUrl(null);
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!thesis?.current) return;
-
-        try {
-            await register({ skripsi_id: thesis.current.id });
-            router.push("/student");
-        } catch (_error) {
-            // Error already handled by mutation toast
-        }
-    };
+    const {
+        sempro,
+        loadingThesis,
+        loadingSempro,
+        loading,
+        file,
+        previewUrl,
+        isAcc,
+        form,
+        handleFileChange,
+        removeFile,
+        handleRegister
+    } = useSemproRegistration();
 
     if (loadingThesis || loadingSempro) {
         return (
@@ -78,12 +44,15 @@ export default function SemproRegistrationPage() {
             <div className="w-11/12 mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 <PageTitle title="Pendaftaran Seminar Proposal" />
                 <div className="flex justify-between items-center">
-                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-                        Pendaftaran <span className="text-indigo-600">{isScheduled ? 'Terjadwal' : 'Terkirim'}</span>
-                    </h1>
-                    <Button variant="ghost" onClick={() => router.push("/student")} className="font-black text-[10px] uppercase tracking-widest gap-2 text-slate-400 hover:text-indigo-600">
-                        <ArrowLeft className="h-4 w-4" /> Dashboard
-                    </Button>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <div className="h-1 w-8 bg-indigo-500 rounded-full" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Pendaftaran Terkirim</span>
+                        </div>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+                            Seminar <span className="text-indigo-600">Proposal</span>
+                        </h1>
+                    </div>
                 </div>
 
                 <div className="grid gap-8">
@@ -126,10 +95,9 @@ export default function SemproRegistrationPage() {
                         </div>
                     </Card>
 
-                    {/* Schedule Details - Only if Scheduled or fields available */}
+                    {/* Schedule Details */}
                     {(isScheduled || sempro.tanggal || sempro.ruang) && (
                         <div className="grid md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 delay-300">
-                            {/* Date */}
                             <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2rem] p-8 flex flex-col items-center gap-4 text-center group">
                                 <div className="h-14 w-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                                     <CalendarIcon className="h-6 w-6" />
@@ -142,7 +110,6 @@ export default function SemproRegistrationPage() {
                                 </div>
                             </Card>
 
-                            {/* Time */}
                             <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2rem] p-8 flex flex-col items-center gap-4 text-center group">
                                 <div className="h-14 w-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                                     <Clock className="h-6 w-6" />
@@ -153,7 +120,6 @@ export default function SemproRegistrationPage() {
                                 </div>
                             </Card>
 
-                            {/* Location */}
                             <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2rem] p-8 flex flex-col items-center gap-4 text-center group">
                                 <div className="h-14 w-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                                     <MapPin className="h-6 w-6" />
@@ -211,7 +177,6 @@ export default function SemproRegistrationPage() {
                         <Button onClick={() => router.push("/student")} className="h-14 px-12 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1">
                             Kembali ke Dashboard
                         </Button>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Siakad Skripsi • Informatics Engineering</p>
                     </div>
                 </div>
             </div>
@@ -270,10 +235,6 @@ export default function SemproRegistrationPage() {
                     </CardContent>
                     <div className="h-2 bg-gradient-to-r from-amber-400 via-indigo-600 to-emerald-400 w-full absolute bottom-0" />
                 </Card>
-                <div className="flex justify-between items-center px-4">
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">Academic Verification System • v1.0.4</p>
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">Siakad Skripsi</p>
-                </div>
             </div>
         );
     }
@@ -281,12 +242,11 @@ export default function SemproRegistrationPage() {
     return (
         <div className="w-11/12 mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <PageTitle title="Pendaftaran Seminar Proposal" />
-            {/* Minimalist Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="h-1 w-8 bg-indigo-600 rounded-full" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Step 02: Registration</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Registration</span>
                     </div>
                     <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
                         Seminar <span className="text-indigo-600">Proposal</span>
@@ -303,7 +263,7 @@ export default function SemproRegistrationPage() {
             </div>
 
             {/* Eligibility Info */}
-            <div className="max-w-xl mx-auto">
+            <div className="max-w-full mx-auto">
                 <Card className="border-none shadow-xl shadow-slate-100/50 bg-emerald-600 text-white rounded-[2.5rem] p-8 overflow-hidden relative group">
                     <div className="relative z-10 flex items-center gap-6">
                         <div className="h-16 w-16 bg-white/20 rounded-2xl border border-white/20 flex items-center justify-center backdrop-blur-md">
@@ -330,55 +290,68 @@ export default function SemproRegistrationPage() {
                 <CardContent className="p-10 space-y-12">
                     <div className="space-y-4">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Dokumen Proposal (PDF) <span className="text-red-500">*</span></Label>
-                        {!file ? (
-                            <div className="group relative border-2 border-dashed border-slate-100 bg-slate-50/50 rounded-[2.5rem] p-16 flex flex-col items-center justify-center gap-6 hover:border-indigo-600/30 hover:bg-indigo-50/30 transition-all cursor-pointer overflow-hidden text-center">
-                                <div className="h-20 w-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 border border-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500">
-                                    <FileUp className="h-10 w-10" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-lg font-black text-slate-900 leading-tight">Klik atau Seret Berkas</p>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Maksimum 5MB • Format PDF</p>
-                                </div>
-                                <input
-                                    type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    accept=".pdf"
-                                    onChange={handleFileChange}
-                                />
-                            </div>
-                        ) : (
-                            <div className="relative border border-slate-100 bg-slate-50/50 rounded-[2.5rem] p-8 flex items-center justify-between gap-6 animate-in zoom-in-95 duration-300">
-                                <div className="flex items-center gap-6">
-                                    <div className="h-16 w-16 rounded-2xl bg-white shadow-lg border border-slate-50 flex items-center justify-center text-indigo-600">
-                                        <FileText className="h-8 w-8" />
+                        <div className="space-y-4">
+                            {!file ? (
+                                <div className={cn(
+                                    "group relative border-2 border-dashed rounded-[2.5rem] p-16 flex flex-col items-center justify-center gap-6 transition-all cursor-pointer overflow-hidden text-center",
+                                    form.formState.errors.file ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50/50" : "border-slate-100 bg-slate-50/50 hover:border-indigo-600/30 hover:bg-indigo-50/30"
+                                )}>
+                                    <div className={cn(
+                                        "h-20 w-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 border flex items-center justify-center group-hover:scale-110 transition-transform duration-500",
+                                        form.formState.errors.file ? "text-red-500 border-red-50" : "text-indigo-600 border-slate-50"
+                                    )}>
+                                        <FileUp className="h-10 w-10" />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-lg font-black text-slate-900 leading-tight truncate max-w-[200px] sm:max-w-md">{file.name}</p>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{(file.size / 1024 / 1024).toFixed(2)} MB • PDF Document</p>
+                                        <p className="text-lg font-black text-slate-900 leading-tight">Klik atau Seret Berkas</p>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Maksimum 5MB • Format PDF</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        accept=".pdf"
+                                        onChange={handleFileChange}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="relative border border-slate-100 bg-slate-50/50 rounded-[2.5rem] p-8 flex items-center justify-between gap-6 animate-in zoom-in-95 duration-300">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-16 w-16 rounded-2xl bg-white shadow-lg border border-slate-50 flex items-center justify-center text-indigo-600">
+                                            <FileText className="h-8 w-8" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-lg font-black text-slate-900 leading-tight truncate max-w-[200px] sm:max-w-md">{file.name}</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{(file.size / 1024 / 1024).toFixed(2)} MB • PDF Document</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => window.open(previewUrl!, '_blank')}
+                                            className="h-12 w-12 rounded-xl border border-slate-200 bg-white text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 shadow-sm transition-all"
+                                        >
+                                            <Eye className="h-5 w-5" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={removeFile}
+                                            className="h-12 w-12 rounded-xl border border-slate-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-100 shadow-sm transition-all"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => window.open(previewUrl!, '_blank')}
-                                        className="h-12 w-12 rounded-xl border border-slate-200 bg-white text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 shadow-sm transition-all"
-                                    >
-                                        <Eye className="h-5 w-5" />
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={removeFile}
-                                        className="h-12 w-12 rounded-xl border border-slate-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-100 shadow-sm transition-all"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                            )}
+                            {form.formState.errors.file && (
+                                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-4 animate-in slide-in-from-top-1">
+                                    {form.formState.errors.file.message as string}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
 
@@ -394,7 +367,7 @@ export default function SemproRegistrationPage() {
                 </CardContent>
                 <CardFooter className="p-10 pt-0">
                     <Button
-                        onClick={handleRegister}
+                        onClick={form.handleSubmit(handleRegister)}
                         className="w-full h-16 rounded-[1.5rem] bg-indigo-950 hover:bg-black text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-100 transition-all gap-3"
                         disabled={loading}
                     >

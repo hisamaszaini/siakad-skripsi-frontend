@@ -9,12 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ArrowUpDown } from "lucide-react";
+import { Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Theme, Prodi } from "@/types";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import { cn } from "@/lib/utils";
 
 interface TemaTableProps {
   data: Theme[];
@@ -49,7 +47,11 @@ export function TemaTable({
             >
               <div className="flex items-center gap-1">
                 Nama Tema
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "name" ? "opacity-100" : "opacity-30")} />
+                {sortField === "name" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead
@@ -58,7 +60,11 @@ export function TemaTable({
             >
               <div className="flex items-center gap-1">
                 Jurusan
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "kode_jurusan" ? "opacity-100" : "opacity-30")} />
+                {sortField === "kode_jurusan" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead className="font-black uppercase text-[10px] tracking-widest">

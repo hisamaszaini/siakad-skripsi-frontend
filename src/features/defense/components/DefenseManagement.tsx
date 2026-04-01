@@ -1,15 +1,18 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Search, CheckCircle2, Clock, XCircle,
-  AlertCircle, Calendar, ChevronLeft,
-  ChevronRight, GraduationCap, LucideIcon
-} from "lucide-react";
 import { useDefenseManagement } from "../hooks/useDefenseManagement";
 import { DefenseTable } from "./DefenseTable";
 import { cn } from "@/lib/utils";
 import { DefenseRegistration } from "@/types";
+import { useProdi } from "@/features/skripsi-tema";
+import { SingleSelect } from "@/components/ui/single-select";
+import { ScheduleExportDialog } from "@/components/shared/schedule-export-dialog";
+import { FilterTabs } from "@/components/ui/filter-tabs";
+import { Search, CheckCircle2, Clock, XCircle, AlertCircle, Calendar, LucideIcon, Filter, Printer } from "lucide-react";
+import { useState } from "react";
+import { PageTitle } from "@/components/ui/page-title";
 
 interface DefenseManagementProps {
   role: "ADMIN" | "LECTURER";
@@ -36,36 +39,40 @@ export function DefenseManagement({ role }: DefenseManagementProps) {
     setSearch,
     filterStatus,
     setFilterStatus,
+    selectedProdi,
+    setSelectedProdi,
     page,
     setPage,
-    sort,
+    sortField,
+    sortOrder,
     handleSort,
     defenseData,
-    isLoading
+    isLoading,
+    limit,
+    setLimit,
   } = useDefenseManagement(role);
+
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const { data: prodiList } = useProdi();
 
   const defenses: DefenseRegistration[] = defenseData?.data || [];
   const total = defenseData?.total || 0;
   const totalPages = defenseData?.totalPages || 1;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500 pb-12">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="h-1 w-8 bg-indigo-600 rounded-full" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-            {role === "ADMIN" ? "Sistem Informasi Skripsi" : "Panel Penguji"}
-          </span>
+    <>
+      <PageTitle title={role === "ADMIN" ? "Penjadwalan Sidang Skripsi" : "Jadwal Sidang Skripsi"} />
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-1 w-8 bg-indigo-600 rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{role === "ADMIN" ? "Penjadwalan Sidang Skripsi" : "Panel Penguji"}</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+            {role === "ADMIN" ? "Penjadwalan Sidang Skripsi" : "Jadwal Penguji Sidang Skripsi"} <span className="text-indigo-600">Mahasiswa</span>
+          </h1>
         </div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-          <GraduationCap className="h-8 w-8 text-indigo-600" />
-          Sidang Skripsi
-        </h1>
-        <p className="text-slate-500 italic font-medium">
-          {role === "ADMIN" 
-            ? "Monitor dan kelola pendaftaran serta penilaian Sidang Akhir Skripsi mahasiswa."
-            : "Jadwal pengujian dan penilaian Sidang Skripsi mahasiswa."}
-        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -76,26 +83,58 @@ export function DefenseManagement({ role }: DefenseManagementProps) {
         <StatCard title="Gagal" value={defenses.filter(s => s.status === 'FAILED').length} icon={XCircle} colorClass="from-rose-500 to-red-600 shadow-rose-500/20" />
       </div>
 
-      <div className="flex gap-2 flex-wrap bg-slate-100/50 p-2 rounded-2xl w-fit">
-        {[
-          { key: "ALL", label: "Semua" },
-          { key: "REGISTERED", label: "Terdaftar" },
-          { key: "SCHEDULED", label: "Terjadwal" },
-          { key: "PASSED", label: "Lulus" },
-          { key: "REVISE", label: "Revisi" },
-          { key: "FAILED", label: "Gagal" },
-        ].map(({ key, label }) => (
-          <Button
-            key={key}
-            variant={filterStatus === key ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilterStatus(key); setPage(1); }}
-            className={`rounded-xl font-bold text-xs transition-all ${filterStatus === key ? "shadow-md bg-indigo-600" : "text-slate-600 hover:bg-white"}`}
-          >
-            {label}
-          </Button>
-        ))}
+      {/* Filters Toolbar */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        {/* Status Filter Tabs */}
+        <FilterTabs
+          tabs={[
+            { key: "ALL", label: "Semua" },
+            { key: "REGISTERED", label: "Terdaftar" },
+            { key: "SCHEDULED", label: "Terjadwal" },
+            { key: "PASSED", label: "Lulus" },
+            { key: "REVISE", label: "Revisi" },
+            { key: "FAILED", label: "Gagal" },
+          ]}
+          activeKey={filterStatus}
+          onChange={setFilterStatus}
+        />
+
+        {/* Prodi Filter (Admin Only) */}
+        {role === "ADMIN" && (
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+              <Filter className="h-3 w-3" /> Filter:
+            </div>
+            <SingleSelect
+              value={selectedProdi}
+              onChange={(val) => setSelectedProdi(val || "ALL")}
+              options={[
+                { label: "Semua Jurusan", value: "ALL" },
+                ...(prodiList || []).map((p: { nama_prodi: string; kode_jurusan: string }) => ({
+                  label: p.nama_prodi,
+                  value: p.kode_jurusan,
+                })),
+              ]}
+              placeholder="Semua Jurusan"
+              className="w-full md:w-64 h-12 rounded-2xl border-slate-200 bg-white shadow-sm font-bold"
+            />
+            <Button
+              onClick={() => setIsExportOpen(true)}
+              variant="outline"
+              className="h-12 rounded-2xl bg-white border-slate-200 hover:bg-slate-50 text-slate-900 shadow-sm px-6 font-bold gap-2 active:scale-95 transition-all shrink-0"
+            >
+              <Printer className="h-4 w-4 text-indigo-600" />
+              <span className="hidden sm:inline">Export Jadwal</span>
+            </Button>
+          </div>
+        )}
       </div>
+
+      <ScheduleExportDialog
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
+        type="SIDANG"
+      />
 
       <Card className="border-none shadow-sm overflow-hidden rounded-3xl sm:rounded-[2rem]">
         <CardHeader className="bg-white border-b border-slate-50 pb-6 px-4 sm:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 space-y-0">
@@ -110,43 +149,26 @@ export function DefenseManagement({ role }: DefenseManagementProps) {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <DefenseTable 
-            data={defenses} 
-            isLoading={isLoading} 
-            _sort={sort} 
-            onSort={handleSort} 
-            role={role} 
+          <DefenseTable
+            data={defenses}
+            isLoading={isLoading}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            role={role}
           />
         </CardContent>
       </Card>
 
-      {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white p-4 px-8 rounded-[2rem] shadow-sm border border-slate-50">
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-            Halaman <span className="text-indigo-600">{page}</span> dari {totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl font-bold gap-1 text-slate-600 border-slate-100"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="h-4 w-4" /> Prev
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl font-bold gap-1 text-slate-600 border-slate-100"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+      <DataTablePagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={total}
+        onPageChange={setPage}
+        limit={limit}
+        onLimitChange={setLimit}
+        isLoading={isLoading}
+      />
+    </>
   );
 }

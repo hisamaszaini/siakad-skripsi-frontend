@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, UserCheck, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { FileText, UserCheck, Clock, CheckCircle2, AlertCircle, Filter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,17 +10,41 @@ import { cn } from "@/lib/utils";
 import { useAllProposalsQuery } from "@/features/proposal";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import { useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PageTitle } from "@/components/ui/page-title";
+import { useProdi } from "@/features/skripsi-tema";
+import { SingleSelect } from "@/components/ui/single-select";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 export default function AdminDashboard() {
-    const { data, isLoading } = useAllProposalsQuery();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const selectedProdi = searchParams.get("prodi") || "all";
+
+    const updateProdi = (val: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (val === "all") {
+            params.delete("prodi");
+        } else {
+            params.set("prodi", val);
+        }
+        router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
+    };
+
+    const { data: prodiList } = useProdi();
+    const { data, isLoading } = useAllProposalsQuery({ prodi: selectedProdi === "all" ? undefined : selectedProdi.toUpperCase() });
+
+    const prodiOptions = useMemo(() => {
+        const list = (prodiList || []).map((p: { nama_prodi: string; kode_jurusan: string }) => ({
+            label: p.nama_prodi,
+            value: p.kode_jurusan
+        }));
+        return [{ label: "Semua Jurusan", value: "all" }, ...list];
+    }, [prodiList]);
     const proposals = data?.data || [];
 
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
 
     const readyToAssign = proposals.filter((p) => p.status === "APPROVED");
     const submitted = proposals.filter((p) => p.status === "SUBMITTED");
@@ -57,12 +81,27 @@ export default function AdminDashboard() {
                         Dashboard <span className="text-indigo-600">Administrator.</span>
                     </h1>
                 </div>
-                <Link href="/admin/proposals" className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto bg-slate-900 hover:bg-black text-white shadow-2xl shadow-slate-200 h-14 sm:h-16 px-8 sm:px-10 rounded-[1.5rem] font-black text-xs uppercase tracking-widest gap-3 active:scale-95 transition-all">
-                        <UserCheck className="h-5 w-5" />
-                        KELOLA DATA USULAN
-                    </Button>
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="hidden sm:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+                            <Filter className="h-3 w-3" /> Filter:
+                        </div>
+                        <SingleSelect
+                            value={selectedProdi}
+                            onChange={(val) => updateProdi(val || "all")}
+                            options={prodiOptions}
+                            placeholder="Semua Jurusan"
+                            className="w-full md:w-64 h-12 rounded-2xl border-slate-200 bg-slate-50/30 font-bold"
+                        />
+                    </div>
+
+                    <Link href="/admin/proposals" className="w-full sm:w-auto">
+                        <Button className="w-full sm:w-auto bg-slate-900 hover:bg-black text-white shadow-2xl shadow-slate-200 h-14 sm:h-16 px-8 sm:px-10 rounded-[1.5rem] font-black text-xs uppercase tracking-widest gap-3 active:scale-95 transition-all">
+                            <UserCheck className="h-5 w-5" />
+                            KELOLA DATA USULAN
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             {/* Vibrant Stats Grid - Fluid Layout */}

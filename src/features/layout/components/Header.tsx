@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { GraduationCap, Bell, Search, Menu } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 
 interface HeaderProps {
     onMenuClick?: () => void;
@@ -10,10 +9,10 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, role }: HeaderProps) {
-    const formattedRole = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : "";
+    const formattedRole = role ? role.replace("_", " ").charAt(0).toUpperCase() + role.replace("_", " ").slice(1).toLowerCase() : "";
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-primary/10 z-40 transition-all duration-300 lg:pl-72">
+        <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-primary/10 z-40 transition-all duration-300 lg:pl-72 print:hidden">
             <div className="h-full px-6 flex items-center justify-between mx-auto">
                 <div className="flex items-center gap-3">
                     <button
@@ -31,14 +30,14 @@ export function Header({ onMenuClick, role }: HeaderProps) {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <div className="hidden md:flex items-center relative group">
+                    {/* <div className="hidden md:flex items-center relative group">
                         <Search className="absolute left-3 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                         <input
                             type="text"
                             placeholder="Cari sesuatu..."
                             className="pl-10 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-blue-500/20 w-64 transition-all duration-300 text-slate-600 outline-none"
                         />
-                    </div>
+                    </div> */}
 
                     <button className="relative p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-300">
                         <Bell className="h-5 w-5" />

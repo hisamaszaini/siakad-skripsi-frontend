@@ -12,8 +12,16 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
 import { cn } from "@/lib/utils";
-import { useGuidanceLogs, guidanceService } from "@/features/guidance";
+import { useGuidanceLogs, guidanceService, GuidanceLog } from "@/features/guidance";
 import { PageTitle } from "@/components/ui/page-title";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogTrigger
+} from "@/components/ui/dialog";
 
 export default function LecturerGuidanceDetailPage() {
     const router = useRouter();
@@ -22,18 +30,17 @@ export default function LecturerGuidanceDetailPage() {
 
     const { proposal, logs, isLoading, mutate } = useGuidanceLogs(thesisId);
     const [loading, setLoading] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<{ [key: string]: string }>({});
 
-    const handleVerify = async (logId: string) => {
+    const handleVerifySync = async (logId: string, customFeedback?: string) => {
         setLoading(logId);
         try {
             await guidanceService.verifyGuidanceLog(logId, {
                 status: 'VERIFIED',
-                catatan: feedback[logId] || undefined
+                catatan: customFeedback || undefined
             });
             mutate();
             toast.success("Log bimbingan berhasil diverifikasi.");
-        } catch (err) {
+        } catch {
             toast.error("Gagal memverifikasi log.");
         } finally {
             setLoading(null);
@@ -61,13 +68,13 @@ export default function LecturerGuidanceDetailPage() {
                 <div className="flex-1 space-y-6 w-full">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="h-1 w-6 bg-indigo-600 rounded-full" />
+                            <div className="h-1 w-6 bg-blue-600 rounded-full" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Arsip Bimbingan</span>
                         </div>
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
                             {proposal?.judul || 'Log Aktivitas Mahasiswa'}
                         </h1>
-                        <p className="text-slate-500 italic">Tinjau dan berikan feedback pada progres bimbingan mahasiswa.</p>
+                        <p className="text-slate-500 italic text-sm">Tinjau dan berikan feedback pada progres bimbingan mahasiswa.</p>
                     </div>
 
                     <div className="space-y-6">
@@ -91,9 +98,15 @@ export default function LecturerGuidanceDetailPage() {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-6">
-                                    <div className="space-y-2">
-                                        <Label className="uppercase text-[10px] tracking-widest font-black text-slate-400">Aktivitas Mahasiswa</Label>
-                                        <p className="text-slate-700 leading-relaxed font-medium">{log.kegiatan}</p>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1">
+                                            <Label className="uppercase text-[8px] tracking-[0.2em] font-black text-blue-500">Materi Pembahasan</Label>
+                                            <p className="text-slate-900 leading-tight font-black italic">{log.materi}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="uppercase text-[8px] tracking-[0.2em] font-black text-blue-500">Saran / Progres Mahasiswa</Label>
+                                            <p className="text-slate-600 leading-relaxed font-medium text-sm">{log.saran}</p>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-4">
@@ -103,24 +116,11 @@ export default function LecturerGuidanceDetailPage() {
                                                 {log.catatan || "Tidak ada catatan tambahan."}
                                             </div>
                                         ) : (
-                                            <div className="space-y-4">
-                                                <Textarea
-                                                    placeholder="Tuliskan feedback progres di sini..."
-                                                    className="min-h-[100px] rounded-xl focus:ring-primary/20 bg-amber-50/20 border-amber-100"
-                                                    value={feedback[log.id] || ""}
-                                                    onChange={(e) => setFeedback({ ...feedback, [log.id]: e.target.value })}
-                                                />
-                                                <div className="flex justify-end">
-                                                    <Button
-                                                        onClick={() => handleVerify(log.id)}
-                                                        disabled={loading === log.id}
-                                                        className="bg-emerald-600 hover:bg-emerald-700 font-bold gap-2"
-                                                    >
-                                                        {loading === log.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                                                        Verifikasi & Simpan Feedback
-                                                    </Button>
-                                                </div>
-                                            </div>
+                                            <VerifyFeedbackModal
+                                                log={log}
+                                                isLoading={loading === log.id}
+                                                onVerify={(feedback) => handleVerifySync(log.id, feedback)}
+                                            />
                                         )}
                                     </div>
                                 </CardContent>
@@ -134,24 +134,24 @@ export default function LecturerGuidanceDetailPage() {
                 </div>
 
                 <div className="w-full md:w-80 space-y-6 sticky top-24">
-                    <Card className="border-none shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="bg-indigo-950 text-white py-6">
+                    <Card className="border-none shadow-sm bg-white overflow-hidden rounded-[2rem]">
+                        <CardHeader className="bg-slate-900 text-white py-8">
                             <CardTitle className="text-lg">Progres Bimbingan</CardTitle>
-                            <CardDescription className="text-indigo-300">Total bimbingan tervalidasi</CardDescription>
+                            <CardDescription className="text-slate-400">Total bimbingan tervalidasi</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-8 text-center space-y-6">
-                            <div className="relative inline-flex items-center justify-center">
+                             <div className="relative inline-flex items-center justify-center">
                                 <svg className="w-32 h-32 transform -rotate-90">
                                     <circle className="text-slate-100" strokeWidth="8" stroke="currentColor" fill="transparent" r="56" cx="64" cy="64" />
-                                    <circle className="text-indigo-600" strokeWidth="8" strokeDasharray={56 * 2 * Math.PI} strokeDashoffset={56 * 2 * Math.PI * (1 - verifiedCount / 12)} strokeLinecap="round" stroke="currentColor" fill="transparent" r="56" cx="64" cy="64" />
+                                    <circle className="text-blue-600" strokeWidth="8" strokeDasharray={56 * 2 * Math.PI} strokeDashoffset={56 * 2 * Math.PI * (1 - verifiedCount / 12)} strokeLinecap="round" stroke="currentColor" fill="transparent" r="56" cx="64" cy="64" />
                                 </svg>
                                 <span className="absolute text-3xl font-black text-slate-900">{verifiedCount}<span className="text-slate-300 text-lg">/12</span></span>
                             </div>
                             <p className="text-sm text-slate-500 font-medium px-4">
                                 {verifiedCount < 12 ? (
-                                    <>Tersisa <span className="text-indigo-600 font-bold">{12 - verifiedCount} kali</span> lagi untuk memenuhi syarat pendaftaran Sidang Skripsi.</>
+                                    <>Tersisa <span className="text-blue-600 font-bold">{12 - verifiedCount} kali</span> lagi untuk memenuhi syarat pendaftaran Sidang Skripsi.</>
                                 ) : (
-                                    <span className="text-emerald-600 font-bold">Syarat bimbingan minimal sudah terpenuhi!</span>
+                                    <span className="text-blue-600 font-bold">Syarat bimbingan minimal sudah terpenuhi!</span>
                                 )}
                             </p>
                         </CardContent>
@@ -162,5 +162,73 @@ export default function LecturerGuidanceDetailPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function VerifyFeedbackModal({ log, onVerify, isLoading }: { log: GuidanceLog, onVerify: (feedback: string) => void, isLoading: boolean }) {
+    const [feedback, setFeedback] = useState("");
+    const [open, setOpen] = useState(false);
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={
+                <Button className="h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95 px-6">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Verifikasi Progres
+                </Button>
+            } />
+            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white">
+                <DialogHeader className="p-8 pb-1">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="h-1 w-6 bg-blue-600 rounded-full" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verifikasi Log</span>
+                    </div>
+                    <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">Evaluasi Progres</DialogTitle>
+                    <DialogDescription className="text-sm font-medium text-slate-500 mt-2">
+                        Berikan feedback atau catatan tambahan pada kegiatan bimbingan ini.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="mx-8 border-b border-slate-100/80" />
+
+                <div className="p-8 space-y-6">
+                    <div className="p-5 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                            <Clock className="h-3 w-3 text-blue-600" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-blue-600">Ringkasan Log</span>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-black text-slate-900 leading-tight italic line-clamp-1">{log.materi}</p>
+                            <p className="text-[11px] font-medium text-slate-500 line-clamp-2">{log.saran}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Feedback Anda</Label>
+                        <Textarea
+                            placeholder="Contoh: Lanjutkan ke bab berikutnya, revisi bagian metodologi..."
+                            className="min-h-[120px] rounded-2xl border border-slate-200 p-4 font-medium focus:border-blue-500 focus:ring-blue-500/20 transition-all leading-relaxed"
+                            value={feedback}
+                            onChange={(e) => setFeedback(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        <Button
+                            onClick={() => {
+                                onVerify(feedback);
+                                setOpen(false);
+                            }}
+                            disabled={isLoading}
+                            className="h-16 rounded-2xl bg-blue-600 hover:bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-100 transition-all active:scale-95"
+                        >
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                            Simpan & Verifikasi
+                        </Button>
+                        <Button variant="ghost" onClick={() => setOpen(false)} className="h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-50">Tutup</Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

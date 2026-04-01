@@ -1,7 +1,7 @@
 "use client";
 
 import { FileSearch, Users, CheckCircle2, Clock, Loader2, FileText, User } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -141,14 +141,14 @@ export default function LecturerDashboard() {
                         </div>
                     </Card>
 
-                    <Card className="rounded-3xl border-none shadow-sm bg-slate-900 text-white p-8 relative overflow-hidden">
+                    <Card className="rounded-3xl border-none shadow-sm bg-slate-800 text-white p-8 relative overflow-hidden">
                         <div className="relative z-10 space-y-6">
                             <div className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Info Sistem</span>
                             </div>
                             <p className="text-sm font-bold leading-relaxed">
-                                Mohon segera berikan <span className="text-indigo-400">Persetujuan</span> atau <span className="text-amber-400">Revisi</span> pada usulan baru agar mahasiswa dapat segera memulai proses SK.
+                                Mohon segera berikan <span className="text-indigo-400">Persetujuan</span> atau <span className="text-amber-400">Revisi</span> pada usulan baru agar mahasiswa dapat segera memulai proses penelitian.
                             </p>
                             <div className="flex items-center gap-3 pt-2">
                                 <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center">

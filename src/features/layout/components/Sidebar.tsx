@@ -19,13 +19,13 @@ interface SidebarProps {
     onClose?: () => void;
 }
 
-export function Sidebar({ items, roleBanner, isOpen, onClose }: SidebarProps) {
+export function Sidebar({ items, isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const { logout } = useAuth();
 
     return (
         <aside className={cn(
-            "fixed left-0 top-0 h-screen w-72 border-r border-primary/10 bg-gradient-to-b from-slate-50 to-white shadow-2xl z-50 transition-all duration-500 flex flex-col",
+            "fixed left-0 top-0 h-screen w-72 border-r border-primary/10 bg-gradient-to-b from-slate-50 to-white shadow-2xl z-50 transition-all duration-500 flex flex-col print:hidden",
             isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}>
             {/* Sidebar Header: Logo & Close Button */}
@@ -79,18 +79,17 @@ export function Sidebar({ items, roleBanner, isOpen, onClose }: SidebarProps) {
                                         : "hover:bg-slate-100 text-slate-500 hover:text-slate-900"
                                 )}
                             >
+                                {!isActive && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                                )}
                                 {isActive && (
-                                    <span className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
+                                    <span className="absolute left-0 w-1 h-6 bg-white rounded-r-full z-10" />
                                 )}
                                 <Icon className={cn(
-                                    "h-[18px] w-[18px] transition-all duration-300",
+                                    "h-[18px] w-[18px] transition-all duration-300 relative z-10",
                                     isActive ? "scale-110" : "group-hover:scale-125 group-hover:text-blue-600"
                                 )} />
-                                <span className="font-bold text-[13px] tracking-wide">{item.label}</span>
-
-                                {!isActive && (
-                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                )}
+                                <span className="font-bold text-[13px] tracking-wide relative z-10">{item.label}</span>
                             </span>
                         </Link>
                     );

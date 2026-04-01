@@ -4,10 +4,17 @@ import { useSemproManagement } from "../hooks/useSemproManagement";
 import { SemproTable } from "./SemproTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, FileText, Clock, CheckCircle2, Calendar, XCircle, AlertCircle, ChevronLeft, ChevronRight, LucideIcon } from "lucide-react";
+import { Search, Loader2, Clock, CheckCircle2, Calendar, XCircle, AlertCircle, LucideIcon, Filter, Printer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
 import { cn } from "@/lib/utils";
 import { SemproRegistration } from "@/types";
+import { useProdi } from "@/features/skripsi-tema";
+import { SingleSelect } from "@/components/ui/single-select";
+import { ScheduleExportDialog } from "@/components/shared/schedule-export-dialog";
+import { FilterTabs } from "@/components/ui/filter-tabs";
+import { useState } from "react";
+import { PageTitle } from "@/components/ui/page-title";
 
 interface SemproManagementProps {
   role?: "ADMIN" | "LECTURER";
@@ -38,25 +45,34 @@ export function SemproManagement({ role = "ADMIN" }: SemproManagementProps) {
     setSearch,
     filterStatus,
     setFilterStatus,
+    selectedProdi,
+    setSelectedProdi,
     page,
     setPage,
     sortField,
     sortOrder,
     handleSort,
+    limit,
+    setLimit,
   } = useSemproManagement(role);
 
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const { data: prodiList } = useProdi();
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500 pb-12">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-          <FileText className="h-8 w-8 text-indigo-600" />
-          {role === "ADMIN" ? "Penjadwalan Seminar Proposal" : "Seminar Proposal"}
-        </h1>
-        <p className="text-slate-500 italic font-medium">
-          {role === "ADMIN"
-            ? "Monitor dan kelola pendaftaran serta penilaian Seminar Proposal mahasiswa."
-            : "Daftar pengujian dan penilaian Seminar Proposal mahasiswa."}
-        </p>
+    <>
+      <PageTitle title={role === "ADMIN" ? "Penjadwalan Seminar Proposal" : "Jadwal Seminar Proposal"} />
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-1 w-8 bg-indigo-600 rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{role === "ADMIN" ? "Penjadwalan Seminar Proposal" : "Panel Penguji"}</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+            {role === "ADMIN" ? "Penjadwalan Seminar Proposal" : "Jadwal Penguji Seminar Proposal"} <span className="text-indigo-600">Mahasiswa</span>
+          </h1>
+        </div>
       </div>
 
       {/* Stat Cards */}
@@ -68,34 +84,60 @@ export function SemproManagement({ role = "ADMIN" }: SemproManagementProps) {
         <StatCard title="Gagal" value={sempros.filter((s: SemproRegistration) => s.status === 'FAILED').length} icon={XCircle} colorClass="from-rose-500 to-red-600 shadow-rose-500/20" />
       </div>
 
-      {/* Status Filter Tabs */}
-      <div className="flex gap-2 flex-wrap bg-slate-100/50 p-2 rounded-2xl w-fit">
-        {[
-          { key: "ALL", label: "Semua" },
-          { key: "REGISTERED", label: "Terdaftar" },
-          { key: "SCHEDULED", label: "Terjadwal" },
-          { key: "PASSED", label: "Lulus" },
-          { key: "REVISE", label: "Revisi" },
-          { key: "FAILED", label: "Gagal" },
-        ].map(({ key, label }) => (
-          <Button
-            key={key}
-            variant={filterStatus === key ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilterStatus(key); setPage(1); }}
-            className={cn(
-              "rounded-xl font-bold text-xs transition-all",
-              filterStatus === key
-                ? "shadow-md bg-indigo-600 hover:bg-indigo-700 text-white"
-                : "text-slate-600 hover:bg-white"
-            )}
-          >
-            {label}
-          </Button>
-        ))}
+      {/* Filters Toolbar */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        {/* Status Filter Tabs */}
+        <FilterTabs
+          tabs={[
+            { key: "ALL", label: "Semua" },
+            { key: "REGISTERED", label: "Terdaftar" },
+            { key: "SCHEDULED", label: "Terjadwal" },
+            { key: "PASSED", label: "Lulus" },
+            { key: "REVISE", label: "Revisi" },
+            { key: "FAILED", label: "Gagal" },
+          ]}
+          activeKey={filterStatus}
+          onChange={setFilterStatus}
+        />
+
+        {/* Prodi Filter (Admin Only) */}
+        {role === "ADMIN" && (
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+              <Filter className="h-3 w-3" /> Filter:
+            </div>
+            <SingleSelect
+              value={selectedProdi}
+              onChange={(val) => setSelectedProdi(val || "ALL")}
+              options={[
+                { label: "Semua Jurusan", value: "ALL" },
+                ...(prodiList || []).map((p: { nama_prodi: string; kode_jurusan: string }) => ({
+                  label: p.nama_prodi,
+                  value: p.kode_jurusan,
+                })),
+              ]}
+              placeholder="Semua Jurusan"
+              className="w-full md:w-64 h-12 rounded-2xl border-slate-200 bg-white shadow-sm font-bold"
+            />
+            <Button
+              onClick={() => setIsExportOpen(true)}
+              variant="outline"
+              className="h-12 rounded-2xl bg-white border-slate-200 hover:bg-slate-50 text-slate-900 shadow-sm px-6 font-bold gap-2 active:scale-95 transition-all shrink-0"
+            >
+              <Printer className="h-4 w-4 text-indigo-600" />
+              <span className="hidden sm:inline">Export Jadwal</span>
+            </Button>
+          </div>
+        )}
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden rounded-3xl sm:rounded-[2rem]">
+      <ScheduleExportDialog
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
+        type="SEMPRO"
+      />
+
+      <Card className="border-none shasw-sm overflow-hidden rounded-3xl sm:rounded-[2rem]">
         <div className="bg-white border-b border-slate-50 p-6 sm:p-8 flex items-center justify-between gap-4">
           <div className="relative w-full md:w-96 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
@@ -105,9 +147,6 @@ export function SemproManagement({ role = "ADMIN" }: SemproManagementProps) {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-12 h-12 border-slate-200 rounded-2xl focus:border-indigo-400 focus:ring-indigo-100 bg-slate-50/30 font-medium w-full"
             />
-          </div>
-          <div className="text-xs font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100/50 hidden sm:block">
-            Total Temuan: <span className="text-indigo-600">{total}</span>
           </div>
         </div>
 
@@ -131,59 +170,15 @@ export function SemproManagement({ role = "ADMIN" }: SemproManagementProps) {
         </CardContent>
       </Card>
 
-      {/* Pagination Controls */}
-      {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white p-4 px-8 rounded-[2rem] shadow-sm border border-slate-50 font-medium">
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-            Halaman <span className="text-indigo-600">{page}</span> dari {totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl font-bold gap-1 text-slate-600 border-slate-100"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="h-4 w-4" /> Prev
-            </Button>
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum = page;
-                if (page <= 3) pageNum = i + 1;
-                else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                else pageNum = page - 2 + i;
-
-                if (pageNum < 1 || pageNum > totalPages) return null;
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={page === pageNum ? "default" : "outline"}
-                    size="sm"
-                    className={cn(
-                      "w-9 h-9 rounded-xl font-black transition-all",
-                      page === pageNum ? "bg-indigo-600 shadow-md shadow-indigo-100" : "text-slate-400 border-slate-50 font-bold"
-                    )}
-                    onClick={() => setPage(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl font-bold gap-1 text-slate-600 border-slate-100"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+      <DataTablePagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={total}
+        onPageChange={setPage}
+        limit={limit}
+        onLimitChange={setLimit}
+        isLoading={isLoading}
+      />
+    </>
   );
 }

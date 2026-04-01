@@ -6,11 +6,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserCheck, Loader2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { UserCheck, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { loginAction } from "@/features/auth/services/auth.service";
 import { PageTitle } from "@/components/ui/page-title";
-import { cn } from "@/lib/utils";
 
 export default function LecturerLoginPage() {
     const router = useRouter();
@@ -66,7 +65,7 @@ export default function LecturerLoginPage() {
                 {/* Back to Home Link */}
                 <Link
                     href="/"
-                    className="group mb-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-blue-600 transition-all duration-300"
+                    className="group mb-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 hover:text-blue-600 transition-all duration-300"
                 >
                     <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" />
                     Kembali ke Beranda
@@ -95,7 +94,7 @@ export default function LecturerLoginPage() {
                             <form onSubmit={handleLogin} className="space-y-8">
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <Label htmlFor="userId" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">
+                                        <Label htmlFor="userId" className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] pl-1">
                                             Nomor Induk Dosen / NIK
                                         </Label>
                                         <Input
@@ -108,7 +107,7 @@ export default function LecturerLoginPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Label htmlFor="password" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">
+                                        <Label htmlFor="password" className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] pl-1">
                                             Password
                                         </Label>
                                         <Input

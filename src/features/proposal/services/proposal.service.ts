@@ -9,6 +9,7 @@ export interface ProposalParams {
   sortField?: string;
   sortOrder?: "asc" | "desc";
   type?: string;
+  prodi?: string;
 }
 
 export const proposalService = {

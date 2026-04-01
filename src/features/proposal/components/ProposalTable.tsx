@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, UserCheck, ArrowUpDown, Clock, CheckCircle2, AlertCircle, XCircle, FileText, Briefcase, GraduationCap } from "lucide-react";
+import { Eye, UserCheck, ArrowUpDown, ArrowUp, ArrowDown, Clock, CheckCircle2, AlertCircle, XCircle, FileText, Briefcase, GraduationCap } from "lucide-react";
 import { Proposal, ProposalStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -22,6 +22,8 @@ interface ProposalTableProps {
   onSort: (field: string) => void;
   sortField: string;
   _sortOrder: "asc" | "desc";
+  page?: number;
+  limit?: number;
 }
 
 const statusBadge = (status: ProposalStatus) => {
@@ -54,13 +56,18 @@ export function ProposalTable({
   onSort,
   sortField,
   _sortOrder,
+  page,
+  limit,
 }: ProposalTableProps) {
   return (
     <div className="min-w-[1000px]">
       <Table>
         <TableHeader className="bg-slate-50/50">
           <TableRow className="hover:bg-transparent border-none text-slate-400">
-            <TableHead className="w-[80px] h-14 font-black uppercase text-[10px] tracking-widest pl-8">
+            <TableHead className="w-[60px] font-black uppercase text-[10px] tracking-widest pl-8 text-center">
+              No
+            </TableHead>
+            <TableHead className="w-[120px] h-14 font-black uppercase text-[10px] tracking-widest">
               NIM
             </TableHead>
             <TableHead 
@@ -69,7 +76,11 @@ export function ProposalTable({
             >
               <div className="flex items-center gap-1">
                 Mahasiswa 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "mahasiswa" ? "opacity-100" : "opacity-30")} />
+                {sortField === "mahasiswa" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead className="font-black uppercase text-[10px] tracking-widest py-5">
@@ -81,7 +92,11 @@ export function ProposalTable({
             >
               <div className="flex items-center gap-1">
                 Status 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "status" ? "opacity-100" : "opacity-30")} />
+                {sortField === "status" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead 
@@ -90,7 +105,11 @@ export function ProposalTable({
             >
               <div className="flex items-center gap-1">
                 Tanggal 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "created_at" ? "opacity-100" : "opacity-30")} />
+                {sortField === "created_at" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-8 py-5">
@@ -101,14 +120,17 @@ export function ProposalTable({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-40 text-center text-slate-400 italic font-medium border-none">
+              <TableCell colSpan={7} className="h-40 text-center text-slate-400 italic font-medium border-none">
                 Belum ada data usulan.
               </TableCell>
             </TableRow>
           ) : (
-            data.map((proposal) => (
+            data.map((proposal, index) => (
               <TableRow key={proposal.id} className="group hover:bg-slate-50/50 transition-colors border-slate-50">
-                <TableCell className="font-mono text-xs font-bold pl-8 py-5 text-slate-400">
+                <TableCell className="pl-8 py-5 text-center font-bold text-slate-400 text-xs">
+                  {page && limit ? (page - 1) * limit + index + 1 : index + 1}
+                </TableCell>
+                <TableCell className="font-mono text-xs font-bold py-5 text-slate-400">
                   {proposal.nim}
                 </TableCell>
                 <TableCell className="py-5 font-bold text-slate-700">

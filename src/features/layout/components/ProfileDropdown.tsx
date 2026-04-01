@@ -1,12 +1,12 @@
 "use client";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
-    DropdownMenuSeparator, 
-    DropdownMenuTrigger 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut, Settings } from "lucide-react";
@@ -33,7 +33,7 @@ export function ProfileDropdown() {
                     </AvatarFallback>
                 </Avatar>
                 <div className="text-left hidden sm:block">
-                    <p className="text-[11px] font-black text-slate-900 leading-none mb-1 uppercase truncate max-w-[120px]">{user.nama}</p>
+                    <p className="text-[11px] font-black text-slate-900 leading-none mb-1 uppercase truncate max-w-32">{user.nama}</p>
                     <p className="text-[9px] font-bold text-slate-400 leading-none tracking-wider">
                         {user.nim || user.nik || user.id}
                     </p>
@@ -57,7 +57,7 @@ export function ProfileDropdown() {
                     <span>Pengaturan</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-primary/5" />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                     onClick={() => logout()}
                     className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg cursor-pointer py-2.5"
                 >

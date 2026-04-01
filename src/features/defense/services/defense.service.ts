@@ -8,10 +8,13 @@ export interface DefenseParams {
   limit?: number;
   sortField?: string;
   sortOrder?: "asc" | "desc";
+  prodi?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const defenseService = {
-  registerDefense: (data: { skripsi_id: string }) =>
+  registerDefense: (data: FormData) =>
     api.post<ApiResponse<DefenseRegistration>>("/skripsi-sidang/daftar", data),
 
   getMyDefense: () =>

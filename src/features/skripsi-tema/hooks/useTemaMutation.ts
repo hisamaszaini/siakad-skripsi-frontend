@@ -3,7 +3,7 @@ import { temaService } from "../services/tema.service";
 import { ThemeFormData } from "../schemas/tema.schema";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { ApiResponse, Theme } from "@/types";
+import { ApiResponse } from "@/types";
 
 export const useCreateTheme = () => {
   const queryClient = useQueryClient();

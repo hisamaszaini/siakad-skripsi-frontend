@@ -1,113 +1,190 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { GuidanceLogSchema, GuidanceLogFormData } from "@/schemas";
-import { useSubmitGuidanceLogMutation } from "../hooks/useGuidanceMutation";
+import { useFormContext } from "react-hook-form";
+import { GuidanceLogFormData } from "@/schemas";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, BookOpen, Calendar, FileText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Loader2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SingleSelect } from "@/components/ui/single-select";
+import {
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogClose,
+} from "@/components/ui/dialog";
 
 interface GuidanceLogFormProps {
-  onSuccess?: () => void;
+    onSubmit: (values: GuidanceLogFormData) => void;
+    isLoading: boolean;
+    onCancel: () => void;
+    showSupervisor?: boolean;
+    supervisorOptions?: { label: string; value: string }[];
+    submitText: string;
+    submitColor?: "indigo" | "amber";
+    title?: string;
+    description?: string;
+    icon?: React.ReactNode;
 }
 
-export function GuidanceLogForm({ onSuccess }: GuidanceLogFormProps) {
-  const { mutateAsync: submitLog, isPending: isLoading } = useSubmitGuidanceLogMutation();
+export function GuidanceLogForm({
+    onSubmit,
+    isLoading,
+    onCancel,
+    showSupervisor = false,
+    supervisorOptions = [],
+    submitText,
+    submitColor = "indigo",
+    title,
+    description,
+    icon
+}: GuidanceLogFormProps) {
+    const { register, watch, setValue, formState: { errors }, handleSubmit } = useFormContext<GuidanceLogFormData>();
 
-  const form = useForm<GuidanceLogFormData>({
-    resolver: zodResolver(GuidanceLogSchema),
-    defaultValues: {
-      tanggal: new Date().toISOString().split("T")[0],
-      kegiatan: "",
-      dosen_id: "",
-      skripsi_id: "",
-    },
-  });
+    const colorClasses = {
+        indigo: "bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 shadow-xl shadow-indigo-100",
+        amber: "bg-amber-600 hover:bg-amber-700 hover:scale-[1.02] active:scale-95 shadow-xl shadow-amber-100"
+    };
 
-  async function onSubmit(values: GuidanceLogFormData) {
-    try {
-      await submitLog(values);
-      form.reset();
-      onSuccess?.();
-    } catch (error) {
-      // Error is handled by the hook
-    }
-  }
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="relative">
+            {title && (
+                <>
+                    <DialogClose render={
+                        <Button variant="ghost" className="absolute right-6 top-6 h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-100 hover:bg-red-50 hover:text-red-500 hover:scale-110 active:scale-95 text-slate-400 transition-all outline-none focus:ring-2 focus:ring-slate-300">
+                            <X className="h-5 w-5" />
+                            <span className="sr-only">Tutup</span>
+                        </Button>
+                    } />
+                    <DialogHeader className="p-8 pb-6 border-b border-slate-100/80 pr-16">
+                        <div className="flex items-center gap-4">
+                            {icon && (
+                                <div className={cn(
+                                    "h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner shrink-0",
+                                    submitColor === 'indigo' ? "bg-indigo-50 text-indigo-600" : "bg-amber-50 text-amber-600"
+                                )}>
+                                    {icon}
+                                </div>
+                            )}
+                            <div className="space-y-1 text-left">
+                                <DialogTitle className="text-xl font-black text-slate-900 tracking-tight leading-none">{title}</DialogTitle>
+                                {description && (
+                                    <DialogDescription className="text-xs font-medium text-slate-500 italic mt-1.5">
+                                        {description}
+                                    </DialogDescription>
+                                )}
+                            </div>
+                        </div>
+                    </DialogHeader>
+                </>
+            )}
+            <div className="p-8 space-y-6">
+                {showSupervisor && (
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                            Dosen Pembimbing <span className="text-red-500">*</span>
+                        </Label>
+                        <SingleSelect
+                            value={watch("dosen_id")}
+                            onChange={(val) => setValue("dosen_id", val, { shouldValidate: true })}
+                            options={supervisorOptions}
+                            placeholder="Pilih dosen pembimbing..."
+                            className={cn("w-full h-14 rounded-2xl border-slate-200", errors.dosen_id && "border-red-500")}
+                        />
+                        {errors.dosen_id && (
+                            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-widest animate-in slide-in-from-top-1">
+                                {errors.dosen_id.message as string}
+                            </p>
+                        )}
+                    </div>
+                )}
 
-  return (
-    <Card className="border-none shadow-lg bg-white rounded-2xl">
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-            <FileText className="h-5 w-5 text-indigo-600" />
-          </div>
-          <div>
-            <CardTitle className="text-lg font-bold text-slate-900">Tambah Log Bimbingan</CardTitle>
-            <CardDescription className="text-sm text-slate-500">
-              Catat kegiatan bimbingan Anda
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="tanggal"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium text-slate-700">
-                    <Calendar className="h-4 w-4 inline-block mr-1" />
-                    Tanggal Bimbingan
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} className="rounded-lg" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                            Materi Pembahasan <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            {...register("materi")}
+                            placeholder="Materi yang dibahas (min. 5 karakter)..."
+                            className={cn(
+                                "h-14 rounded-2xl border border-slate-200 bg-white px-6 font-bold focus:border-indigo-500 focus:ring-indigo-500/20 transition-all font-sans",
+                                errors.materi && "border-red-500"
+                            )}
+                        />
+                        {errors.materi && (
+                            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-widest animate-in slide-in-from-top-1">
+                                {errors.materi.message as string}
+                            </p>
+                        )}
+                    </div>
 
-            <FormField
-              control={form.control}
-              name="kegiatan"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium text-slate-700">
-                    <BookOpen className="h-4 w-4 inline-block mr-1" />
-                    Kegiatan Bimbingan
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Jelaskan kegiatan bimbingan yang telah dilakukan..."
-                      className="min-h-[150px] rounded-lg"
-                      {...field}
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                            Saran / Tindak Lanjut <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                            {...register("saran")}
+                            placeholder="Saran dari pembimbing (min. 10 karakter)..."
+                            className={cn(
+                                "min-h-[140px] rounded-2xl border border-slate-200 bg-white p-6 font-medium focus:border-indigo-500 focus:ring-indigo-500/20 transition-all leading-relaxed",
+                                errors.saran && "border-red-500"
+                            )}
+                        />
+                        {errors.saran && (
+                            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-widest animate-in slide-in-from-top-1">
+                                {errors.saran.message as string}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-2 pb-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                        Waktu Bimbingan <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                        type="datetime-local"
+                        {...register("tanggal")}
+                        className={cn(
+                            "h-14 rounded-2xl border border-slate-200 bg-white px-6 font-bold focus:border-indigo-500 focus:ring-indigo-500/20 transition-all",
+                            errors.tanggal && "border-red-500"
+                        )}
                     />
-                  </FormControl>
-                  <FormDescription className="text-xs">
-                    minimum 10 karakter, maksimum 2000 karakter
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    {errors.tanggal && (
+                        <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-widest animate-in slide-in-from-top-1">
+                            {errors.tanggal.message as string}
+                        </p>
+                    )}
+                </div>
+            </div>
 
-            <Button
-              type="submit"
-              className="w-full rounded-lg"
-              disabled={isLoading}
-            >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Simpan Log Bimbingan
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  );
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-row items-center sm:justify-center gap-3 rounded-b-[2.5rem]">
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 h-16 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm border-slate-200 active:scale-95 hover:scale-[1.02]"
+                    onClick={onCancel}
+                >
+                    Batal
+                </Button>
+                <Button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className={cn(
+                        "flex-[1.5] h-16 rounded-2xl text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 disabled:opacity-50",
+                        colorClasses[submitColor]
+                    )}
+                >
+                    {isLoading ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> ...</>
+                    ) : (
+                        submitText
+                    )}
+                </Button>
+            </div>
+        </form>
+    );
 }

@@ -1,19 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { semproService } from "../services/sempro.service";
 import { semproKeys } from "./useSemproQueries";
-import { SemproRegistrationFormData, SemproScheduleFormData, SemproEvaluationFormData } from "@/types";
+import { SemproScheduleFormData, SemproEvaluationFormData, ApiResponse } from "@/types";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export const useRegisterSemproMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: SemproRegistrationFormData) => semproService.registerSempro(data),
+    mutationFn: (data: FormData) => semproService.registerSempro(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: semproKeys.all });
       toast.success("Pendaftaran Sempro berhasil!");
     },
-    onError: () => {
-      toast.error("Gagal mendaftar Sempro");
+    onError: (error: AxiosError<ApiResponse<unknown>>) => {
+      const message = error.response?.data?.message || "Gagal mendaftar Sempro";
+      toast.error(message);
     },
   });
 };
@@ -27,8 +29,9 @@ export const useScheduleSemproMutation = () => {
       queryClient.invalidateQueries({ queryKey: semproKeys.all });
       toast.success("Jadwal Sempro berhasil ditetapkan!");
     },
-    onError: () => {
-      toast.error("Gagal menetapkan jadwal Sempro");
+    onError: (error: AxiosError<ApiResponse<unknown>>) => {
+      const message = error.response?.data?.message || "Gagal menetapkan jadwal Sempro";
+      toast.error(message);
     },
   });
 };
@@ -42,8 +45,9 @@ export const useEvaluateSemproMutation = () => {
       queryClient.invalidateQueries({ queryKey: semproKeys.all });
       toast.success("Penilaian Sempro berhasil disimpan!");
     },
-    onError: () => {
-      toast.error("Gagal menyimpan penilaian Sempro");
+    onError: (error: AxiosError<ApiResponse<unknown>>) => {
+      const message = error.response?.data?.message || "Gagal menyimpan penilaian Sempro";
+      toast.error(message);
     },
   });
 };

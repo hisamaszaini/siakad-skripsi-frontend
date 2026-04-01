@@ -80,9 +80,16 @@ export function GuidanceLogList({
                     )}
                   </div>
 
-                  <p className="text-slate-900 whitespace-pre-wrap">
-                    {log.kegiatan}
-                  </p>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-black uppercase tracking-[0.2em] text-indigo-500">Materi</span>
+                      <p className="text-sm font-bold text-slate-900 leading-tight italic">{log.materi}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-black uppercase tracking-[0.2em] text-indigo-500">Saran / Progres</span>
+                      <p className="text-xs font-medium text-slate-600 leading-relaxed">{log.saran}</p>
+                    </div>
+                  </div>
 
                   {log.catatan && (
                     <div className="p-3 bg-amber-50 rounded-lg text-sm text-amber-800">

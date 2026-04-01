@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     useProposalByIdQuery,
@@ -11,8 +11,7 @@ import {
     useThemesQuery,
     proposalService
 } from "@/features/proposal";
-import { useQueryClient } from "@tanstack/react-query";
-import { Proposal, Lecturer, Supervisor, ProposalStatus } from "@/types";
+import { Lecturer, Supervisor, ProposalStatus } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,7 @@ import { SingleSelect } from "@/components/ui/single-select";
 import {
     ChevronLeft, UserCheck, User, Hash, Clock, BookOpen,
     CheckCircle2, Loader2, GraduationCap, AlertCircle,
-    Trash2, Save, MoreVertical, Plus,
+    Trash2, Save, MoreVertical,
     FileText,
     Briefcase,
     XCircle,
@@ -40,14 +39,6 @@ import {
     DropdownMenuTrigger,
     DropdownMenuGroup
 } from "@/components/ui/dropdown-menu";
-
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import { PageTitle } from "@/components/ui/page-title";
 
 const statusBadge = (status: ProposalStatus) => {
@@ -85,12 +76,11 @@ function AdminProposalDetailPage() {
         status: "" as ProposalStatus
     });
 
-    const queryClient = useQueryClient();
     const { data: proposal, isLoading } = useProposalByIdQuery(id);
     const { data: periodsData } = usePeriodsQuery();
     const periods = periodsData || [];
     const { data: themesData } = useThemesQuery(proposal?.mhs_id);
-    const themes = themesData || [];
+    const themes = useMemo(() => themesData || [], [themesData]);
 
     const { mutateAsync: assignSupervisors } = useAssignSupervisorsMutation();
     const { mutateAsync: manualUpdateStatus } = useManualUpdateStatusMutation();
@@ -98,24 +88,26 @@ function AdminProposalDetailPage() {
 
     // Pre-fill Pembimbing 1 with the student's proposed supervisor when data loads
     const [initialized, setInitialized] = useState(false);
-    if (proposal && !initialized) {
-        if (proposal.pembimbing_usulan_id) {
-            setPembimbing1Id(proposal.pembimbing_usulan_id);
+    useEffect(() => {
+        if (proposal && themes.length > 0 && !initialized) {
+            if (proposal.pembimbing_usulan_id) {
+                setPembimbing1Id(proposal.pembimbing_usulan_id);
+            }
+
+            // Determine if current theme is a predefined one or custom
+            const isPredefined = themes.some(t => t.name === proposal.tema);
+
+            setEditForm({
+                judul: proposal.judul,
+                tema: isPredefined ? (proposal.tema || "") : (proposal.tema ? "Lainnya" : ""),
+                customTema: isPredefined ? "" : (proposal.tema || ""),
+                sks_total: proposal.sks_total,
+                periode_id: proposal.periode_id || "",
+                status: proposal.status
+            });
+            setInitialized(true);
         }
-
-        // Determine if current theme is a predefined one or custom
-        const isPredefined = themes.some(t => t.name === proposal.tema);
-
-        setEditForm({
-            judul: proposal.judul,
-            tema: isPredefined ? (proposal.tema || "") : (proposal.tema ? "Lainnya" : ""),
-            customTema: isPredefined ? "" : (proposal.tema || ""),
-            sks_total: proposal.sks_total,
-            periode_id: proposal.periode_id || "",
-            status: proposal.status
-        });
-        setInitialized(true);
-    }
+    }, [proposal, themes, initialized]);
 
     const handleAssign = async () => {
         if (!pembimbing1Id) {
@@ -138,7 +130,7 @@ function AdminProposalDetailPage() {
                 id,
                 data: { supervisors }
             });
-        } catch (error) {
+        } catch {
             // Toast handled by hook
         } finally {
             setLoading(false);
@@ -149,6 +141,7 @@ function AdminProposalDetailPage() {
         setLoading(true);
         try {
             const finalTema = editForm.tema === "Lainnya" ? editForm.customTema : editForm.tema;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { customTema, ...payload } = editForm;
 
             await manualUpdateStatus({
@@ -159,7 +152,7 @@ function AdminProposalDetailPage() {
                 }
             });
             setIsEditing(false);
-        } catch (error) {
+        } catch {
             // Toast handled by hook
         } finally {
             setLoading(false);
@@ -171,7 +164,7 @@ function AdminProposalDetailPage() {
 
         try {
             await manualUpdateStatus({ id, data: { status } });
-        } catch (error) {
+        } catch {
             // Toast handled by hook
         }
     };
@@ -182,7 +175,7 @@ function AdminProposalDetailPage() {
         try {
             await deleteProposal(id);
             router.push("/admin/proposals");
-        } catch (error) {
+        } catch {
             // Toast handled by hook
         }
     };

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, ArrowUpDown, Clock, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { Eye, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Clock, CheckCircle2, AlertCircle, XCircle, Award } from "lucide-react";
 import { SemproRegistration } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -54,10 +54,24 @@ export function SemproTable({
       <Table>
         <TableHeader className="bg-slate-50/50">
           <TableRow className="hover:bg-transparent border-none text-slate-400">
-            <TableHead className="w-[110px] h-14 font-black uppercase text-[10px] tracking-widest pl-8 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort("nim")}>
+            <TableHead className="w-[80px] h-14 font-black uppercase text-[10px] tracking-widest pl-8 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort("created_at")}>
+              <div className="flex items-center gap-1">
+                No 
+                {sortField === "created_at" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
+              </div>
+            </TableHead>
+            <TableHead className="w-[110px] h-14 font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort("nim")}>
               <div className="flex items-center gap-1">
                 NIM 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "nim" ? "opacity-100" : "opacity-30")} />
+                {sortField === "nim" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead 
@@ -66,7 +80,11 @@ export function SemproTable({
             >
               <div className="flex items-center gap-1">
                 Mahasiswa 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "mahasiswa" ? "opacity-100" : "opacity-30")} />
+                {sortField === "mahasiswa" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead 
@@ -75,7 +93,11 @@ export function SemproTable({
             >
               <div className="flex items-center gap-1">
                 Judul Usulan 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "judul" ? "opacity-100" : "opacity-30")} />
+                {sortField === "judul" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead 
@@ -84,17 +106,28 @@ export function SemproTable({
             >
               <div className="flex items-center gap-1">
                 Status 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "status" ? "opacity-100" : "opacity-30")} />
+                {sortField === "status" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
             </TableHead>
             <TableHead 
               className="font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors"
-              onClick={() => onSort("created_at")}
+              onClick={() => onSort("tanggal")}
             >
               <div className="flex items-center gap-1">
-                Terdaftar 
-                <ArrowUpDown className={cn("h-3 w-3 transition-opacity", sortField === "created_at" ? "opacity-100" : "opacity-30")} />
+                Waktu
+                {sortField === "tanggal" ? (
+                  _sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-30" />
+                )}
               </div>
+            </TableHead>
+            <TableHead className="font-black uppercase text-[10px] tracking-widest">
+              Ruang
             </TableHead>
             <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-8 py-5">
               Aksi
@@ -104,14 +137,17 @@ export function SemproTable({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-40 text-center text-slate-400 italic font-medium border-none">
+              <TableCell colSpan={8} className="h-40 text-center text-slate-400 italic font-medium border-none">
                 Belum ada data pendaftar seminar.
               </TableCell>
             </TableRow>
           ) : (
-            data.map((sempro) => (
+            data.map((sempro, index) => (
               <TableRow key={sempro.id} className="group hover:bg-slate-50/50 transition-colors border-slate-50">
                 <TableCell className="font-mono text-xs font-bold pl-8 py-5 text-slate-400">
+                  {index + 1}
+                </TableCell>
+                <TableCell className="font-mono text-xs font-bold py-5 text-slate-400">
                   {sempro.nim}
                 </TableCell>
                 <TableCell className="py-5 font-bold text-slate-700">
@@ -124,25 +160,48 @@ export function SemproTable({
                   {statusBadge(sempro.status)}
                 </TableCell>
                 <TableCell className="py-5">
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                    <Clock className="h-3 w-3" />
-                    {format(new Date(sempro.created_at), "dd MMM yyyy", { locale: idLocale })}
-                  </div>
+                  {sempro.tanggal ? (
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-bold text-slate-600">
+                        {format(new Date(sempro.tanggal), "dd MMM yyyy", { locale: idLocale })}
+                      </span>
+                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-tight">
+                        {format(new Date(sempro.tanggal), "HH:mm")} WIB
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] font-bold text-slate-300 uppercase italic">Belum Dijadwalkan</span>
+                  )}
+                </TableCell>
+                <TableCell className="py-5">
+                  {sempro.tanggal ? (
+                    <span className="text-xs font-bold text-slate-700">{sempro.ruang || "-"}</span>
+                  ) : (
+                    <span className="text-xs font-bold text-slate-300">-</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right pr-8 py-5">
                   <Link href={`/${role.toLowerCase()}/sempro/${sempro.id}`}>
                     <Button
                       size="sm"
-                      variant={sempro.status === "REGISTERED" ? "default" : "ghost"}
+                      variant={(role === "ADMIN" && sempro.status === "REGISTERED") || (role === "LECTURER" && sempro.status === "SCHEDULED") ? "default" : "ghost"}
                       className={cn(
                         "rounded-xl font-bold gap-2 transition-all duration-300",
-                        sempro.status === "REGISTERED" 
+                        ((role === "ADMIN" && sempro.status === "REGISTERED") || (role === "LECTURER" && sempro.status === "SCHEDULED"))
                           ? "shadow-md bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100" 
                           : "text-slate-600 hover:bg-slate-100"
                       )}
                     >
-                      {sempro.status === "REGISTERED" ? <Calendar className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      {sempro.status === "REGISTERED" ? "Jadwalkan" : "Detail"}
+                      {role === "ADMIN" ? (
+                        sempro.status === "REGISTERED" ? <Calendar className="h-4 w-4" /> : <Eye className="h-4 w-4" />
+                      ) : (
+                        sempro.status === "SCHEDULED" ? <Award className="h-4 w-4" /> : <Eye className="h-4 w-4" />
+                      )}
+                      {role === "ADMIN" ? (
+                        sempro.status === "REGISTERED" ? "Jadwalkan" : "Detail"
+                      ) : (
+                        sempro.status === "SCHEDULED" ? "Beri Nilai" : "Detail"
+                      )}
                     </Button>
                   </Link>
                 </TableCell>

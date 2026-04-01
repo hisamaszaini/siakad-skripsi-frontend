@@ -1,9 +1,6 @@
 "use client";
 
-import {
-    GraduationCap, FileText, CheckCircle2, Clock, XCircle,
-    Loader2, AlertTriangle, RefreshCcw, User, LucideIcon, Lock
-} from "lucide-react";
+import { GraduationCap, FileText, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCcw, User, LucideIcon, CircleAlert } from "lucide-react";
 import { Proposal, Supervisor } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -135,13 +132,13 @@ const EXAM_STATUS_CONFIG: Record<string, { label: string; badge: string; color: 
 export default function StudentDashboard() {
     const { user } = useAuth();
     const { data: thesisRes, isLoading: thesisLoading } = useMyThesisQuery();
-    const { data: sempro, isLoading: semproLoading } = useActiveSemproQuery();
-    const { data: defense, isLoading: defenseLoading } = useActiveDefenseQuery();
+    const { data: sempro } = useActiveSemproQuery();
+    const { data: defense } = useActiveDefenseQuery();
 
     const thesis = thesisRes?.current;
     const history = thesisRes?.history || [];
 
-    const isLoading = thesisLoading || semproLoading || defenseLoading;
+    const isLoading = thesisLoading && !thesisRes;
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -170,7 +167,7 @@ export default function StudentDashboard() {
     };
 
     return (
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-16 mt-16 lg:mt-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+        <div className="w-11/12 mx-auto space-y-10 sm:space-y-16 mt-16 lg:mt-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
             <PageTitle title="Dashboard Mahasiswa" />
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-10">
                 <div className="space-y-1">
@@ -179,10 +176,10 @@ export default function StudentDashboard() {
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Student Portal</span>
                     </div>
                     <div className="space-y-1 sm:space-y-2">
-                        <p className="text-slate-500 font-medium text-sm sm:text-base tracking-tight">{getGreeting()}, {user?.nama?.split(' ')[0] || 'Mahasiswa'} 👋</p>
-                        <h1 className="text-4xl sm:text-5xl lg:text-3xl font-black tracking-tighter text-slate-900 leading-[1.1]">
+                        <h1 className="text-3xl sm:text-5xl lg:text-3xl font-black tracking-tighter text-slate-600 leading-[1.1]">
                             Dashboard <span className="text-indigo-600">Mahasiswa.</span>
                         </h1>
+                        <p className="text-slate-900 font-bold text-base sm:text-4xl tracking-tight">{getGreeting()}, {user?.nama?.split(' ')[0] || 'Mahasiswa'} 👋</p>
                     </div>
                 </div>
                 {(!thesis || thesis.status === "REJECTED" || thesis.status === "NONACTIVE") && (
@@ -197,9 +194,9 @@ export default function StudentDashboard() {
 
             {thesis ? (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-                    {/* Left Column: Status & Info */}
+                    {/* Left Column */}
                     <div className="lg:col-span-8 space-y-8 lg:space-y-10">
-                        {/* Status Card - Glassmorphism Evolution */}
+                        {/* Status Card */}
                         <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white/70 backdrop-blur-xl overflow-hidden rounded-[2.5rem] relative group border border-white/40">
                             <div className={cn(
                                 "absolute top-0 right-0 h-40 w-40 rounded-full blur-3xl -mr-20 -mt-20 opacity-20 transition-transform duration-700 group-hover:scale-110",
@@ -229,10 +226,10 @@ export default function StudentDashboard() {
                                         <p className="text-base sm:text-lg text-slate-500 font-medium leading-relaxed max-w-2xl">
                                             {currentStatus?.description}
                                         </p>
-                                        {thesis.catatan && (
+                                        {(thesis.status === "REJECTED" || thesis.status === "REVISION" || thesis.status === "PLOTTED") && thesis.catatan && (
                                             <div className="mt-6 sm:mt-8 p-6 rounded-[1.5rem] sm:rounded-[2rem] bg-slate-50/50 border border-slate-100/50 text-slate-600 text-sm flex flex-col sm:flex-row gap-4 backdrop-blur-sm">
                                                 <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
-                                                    <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500" />
+                                                    <CircleAlert className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500" />
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="font-black text-slate-900 uppercase text-[9px] sm:text-[10px] tracking-widest block font-primary opacity-40">Respons Pembimbing</p>
@@ -252,28 +249,28 @@ export default function StudentDashboard() {
                                     <div className="h-4 w-1 bg-indigo-600 rounded-full" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 font-primary">Academic Thesis Review</span>
                                 </div>
-                                <CardTitle className="text-2xl sm:text-3xl lg:text-3xl font-black text-slate-900 leading-tight tracking-tight group-hover:text-indigo-600 transition-colors duration-300">
+                                <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 leading-tight tracking-tight group-hover:text-indigo-600 transition-colors duration-300">
                                     &quot;{thesis.judul}&quot;
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-8 sm:p-10 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
-                                <div className="p-6 sm:p-8 rounded-[2rem] bg-slate-50/50 border border-slate-100/50 relative overflow-hidden">
+                                <div className="w-full p-6 sm:p-8 rounded-[2rem] bg-slate-50/50 border border-slate-100/50 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                         <FileText className="h-16 w-16" />
                                     </div>
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 sm:mb-3 block font-primary">Kategori Bidang</span>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 sm:mb-3 block font-primary">Tema</span>
                                     <p className="text-slate-700 font-bold text-base sm:text-xl italic leading-relaxed relative z-10">
                                         {thesis.tema}
                                     </p>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-6 sm:gap-8 pt-2">
-                                    <div className="flex items-center gap-3 sm:gap-4 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-100">
+                                <div className="flex flex-wrap items-center gap-6 pt-2">
+                                    <div className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-100">
                                         <div className="p-2 bg-white rounded-xl shadow-sm">
                                             <Clock className="h-4 w-4 text-indigo-500" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Time Registered</p>
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tanggal Daftar</p>
                                             <p className="text-xs sm:text-sm font-black text-slate-700">
                                                 {new Date(thesis.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                                             </p>
@@ -310,7 +307,6 @@ export default function StudentDashboard() {
                                 </Link>
                             </div>
                         )}
-                        {/* Visual Lifecycle - Modern Fluid Timeline */}
                         <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2.5rem] overflow-hidden group">
                             <CardHeader className="p-8 pb-4">
                                 <div className="flex items-center gap-2">
@@ -321,9 +317,7 @@ export default function StudentDashboard() {
                             <CardContent className="p-8 pt-4">
                                 <div className="relative overflow-x-auto pb-6 scrollbar-hide -mx-2">
                                     <div className="min-w-[800px] relative flex justify-between px-6 py-6">
-                                        {/* Connection Line Background */}
                                         <div className="absolute top-[42px] left-12 right-12 h-[3px] bg-slate-100 rounded-full -z-0" />
-                                        {/* Progressive Line */}
                                         <div
                                             className="absolute top-[42px] left-12 h-[3px] bg-indigo-600 rounded-full z-0 transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(79,70,229,0.3)]"
                                             style={{ width: `calc(${STATUS_PROGRESS[thesis.status] || "0%"} - 48px)` }}
@@ -369,7 +363,7 @@ export default function StudentDashboard() {
                             </CardContent>
                         </Card>
 
-                        {/* History Section - Sleek Minimalist */}
+                        {/* History Section */}
                         {history && history.length > 1 && (
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
@@ -406,13 +400,12 @@ export default function StudentDashboard() {
                         )}
                     </div>
 
-                    {/* Right Column: Stats & Meta */}
+                    {/* Right Column */}
                     <div className="lg:col-span-4 space-y-8 lg:space-y-10">
-                        {/* Summary Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 sm:gap-8">
+                        {/* Summary Stats */}
+                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 sm:gap-8">
                             {[
                                 { label: "AKUMULASI SKS", value: `${thesis.sks_total} SKS`, icon: GraduationCap, color: "from-indigo-950 to-indigo-900", shadow: "shadow-indigo-900/20" },
-                                { label: "PROGRESS ESTIMASI", value: STATUS_PROGRESS[thesis.status] || "0%", icon: RefreshCcw, color: "from-blue-700 to-indigo-800", shadow: "shadow-blue-700/20" },
                             ].map((stat, i) => (
                                 <Card key={i} className={cn("border-none shadow-2xl rounded-[2.5rem] overflow-hidden relative text-white group", stat.shadow)}>
                                     <div className={cn("absolute inset-0 bg-gradient-to-br opacity-100 group-hover:scale-110 transition-transform duration-700", stat.color)} />
@@ -429,7 +422,7 @@ export default function StudentDashboard() {
                             ))}
                         </div>
 
-                        {/* Supervisors Card - Premium Minimalist */}
+                        {/* Supervisors Card */}
                         <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-slate-50 flex items-center justify-between">
                                 <h3 className="font-black text-slate-900 text-[10px] uppercase tracking-[0.4em]">Advisory Team</h3>
@@ -437,7 +430,7 @@ export default function StudentDashboard() {
                             </CardHeader>
                             <CardContent className="p-8 space-y-6">
                                 {["PLOTTED", "SEMPRO", "SKRIPSI", "SIDANG", "FINISHED"].includes(thesis.status) && thesis.supervisors && thesis.supervisors.length > 0 ? (
-                                    thesis.supervisors.sort((a: Supervisor, b: Supervisor) => a.role === "MAIN" ? -1 : 1).map((s: Supervisor, idx: number) => (
+                                    thesis.supervisors.sort((a: Supervisor, b: Supervisor) => a.role === "MAIN" ? -1 : (b.role === "MAIN" ? 1 : 0)).map((s: Supervisor, idx: number) => (
                                         <div key={idx} className="flex items-center gap-5 p-4 rounded-2xl bg-slate-50/50 hover:bg-indigo-50/50 transition-all duration-300 border border-transparent hover:border-indigo-100 group">
                                             <div className="relative">
                                                 <Avatar className="h-14 w-14 border-2 border-white ring-4 ring-indigo-50/50 overflow-hidden shadow-sm">
@@ -471,7 +464,7 @@ export default function StudentDashboard() {
                             </CardContent>
                         </Card>
 
-                        {/* Exam Results Dashboard */}
+                        {/* Exam Results */}
                         {(sempro || defense) && (
                             <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[2.5rem] overflow-hidden">
                                 <CardHeader className="p-8 border-b border-slate-50">
@@ -493,7 +486,7 @@ export default function StudentDashboard() {
                                                         <span className="text-slate-900 font-black">{new Date(sempro.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}, {sempro.jam || '--:--'}</span>
                                                     </div>
                                                 ) : (
-                                                    <p className="text-[10px] text-slate-400 italic text-center py-2 opacity-60 font-medium tracking-tight">Menunggu jadwal ditetapkan.</p>
+                                                    <p className="text-md text-slate-500 italic text-center py-2 opacity-60 font-medium tracking-tight">Menunggu jadwal ditetapkan.</p>
                                                 )}
                                                 {sempro.nilai !== null && sempro.nilai !== undefined && (
                                                     <div className="flex justify-between items-center pt-3 border-t border-slate-200/50">
@@ -535,15 +528,15 @@ export default function StudentDashboard() {
                             </Card>
                         )}
 
-                        {/* Academy Bulletin - Dark Mode Card */}
-                        <Card className="border-none bg-indigo-950 text-white rounded-[2.5rem] p-10 relative overflow-hidden group shadow-2xl shadow-indigo-950/20">
+                        {/* Academy Bulletin */}
+                        <Card className="border-none bg-indigo-800 text-white rounded-[2.5rem] p-10 relative overflow-hidden group shadow-2xl shadow-indigo-950/20">
                             <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
                             <div className="absolute bottom-0 left-0 h-32 w-32 bg-blue-500/10 rounded-full -ml-16 -mb-16 blur-2xl opacity-50" />
                             <div className="relative z-10 space-y-8">
                                 <div className="h-1 w-10 bg-indigo-500 rounded-full" />
                                 <div className="space-y-4">
-                                    <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-indigo-400 font-primary">Academy Bulletin</h4>
-                                    <p className="text-lg font-bold leading-relaxed tracking-tight text-indigo-50/90 italic">
+                                    <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-indigo-300 font-primary">Academy Bulletin</h4>
+                                    <p className="text-lg font-bold leading-relaxed tracking-tight text-white italic">
                                         &quot;{["PLOTTED", "SEMPRO", "SKRIPSI", "SIDANG", "FINISHED"].includes(thesis.status)
                                             ? "Selesaikan draft Bab 1-3 sebelum jadwal Seminar Proposal dibuka bulan depan untuk hasil optimal."
                                             : "Pastikan berkas usulan Anda telah divalidasi oleh Calon Pembimbing melalui feedback sistem sebelum final submit."}&quot;
@@ -555,7 +548,7 @@ export default function StudentDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-white tracking-[0.05em]">Academic Support</p>
-                                        <p className="text-[9px] font-black text-indigo-400/70 uppercase tracking-widest mt-0.5">Sistem Informasi v1.0</p>
+                                        <p className="text-[9px] font-black text-indigo-400/70 uppercase tracking-widest mt-0.5">SIAKAD-Skripsi v1.0</p>
                                     </div>
                                 </div>
                             </div>
@@ -563,7 +556,7 @@ export default function StudentDashboard() {
                     </div>
                 </div>
             ) : (
-                /* Sleek Empty State */
+                /* Empty State */
                 <div className="h-[65vh] flex flex-col items-center justify-center p-16 text-center bg-white rounded-[4rem] border-2 border-dashed border-slate-100 shadow-2xl shadow-slate-100/50">
                     <div className="h-24 w-24 bg-indigo-50 rounded-[2.5rem] flex items-center justify-center text-indigo-600 mb-10 shadow-inner">
                         <GraduationCap className="h-12 w-12" />

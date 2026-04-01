@@ -9,7 +9,7 @@ const navItems = [
     { href: "/student/guidance", label: "Bimbingan", icon: ClipboardList },
     { href: "/student/sempro", label: "Seminar Proposal", icon: BookOpen },
     { href: "/student/defense", label: "Sidang Skripsi", icon: GraduationCap },
-    { href: "/student/change-request", label: "Layanan Perubahan", icon: RefreshCcw },
+    { href: "#coming-soon", label: "Layanan Perubahan (Coming Soon)", icon: RefreshCcw },
 ];
 
 export default function StudentLayout({

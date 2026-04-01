@@ -13,7 +13,8 @@ export type ProposalFormData = z.infer<typeof ProposalSchema>;
 export const GuidanceLogSchema = z.object({
     dosen_id: z.string().min(1, 'Dosen Pembimbing wajib dipilih'),
     tanggal: z.string().min(1, 'Tanggal bimbingan wajib diisi'),
-    kegiatan: z.string().min(10, 'Aktivitas bimbingan minimal 10 karakter'),
+    materi: z.string().min(5, 'Materi bimbingan minimal 5 karakter').max(50, 'Materi bimbingan maksimal 50 karakter'),
+    saran: z.string().min(10, 'Saran bimbingan minimal 10 karakter'),
 });
 
 export type GuidanceLogFormData = z.infer<typeof GuidanceLogSchema>;

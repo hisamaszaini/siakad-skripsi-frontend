@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import { Calendar, MapPin, Clock, User, GraduationCap, ArrowRight, Loader2, AlertCircle, Gavel } from "lucide-react";
+import { Calendar, MapPin, Clock, GraduationCap, ArrowRight, Loader2, AlertCircle, Gavel } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRegisterDefenseMutation } from "../hooks/useDefenseMutation";
 
@@ -13,7 +13,7 @@ interface DefenseCardProps {
   showStudent?: boolean;
 }
 
-export function DefenseCard({ defense, showStudent = false }: DefenseCardProps) {
+export function DefenseCard({ defense }: DefenseCardProps) {
   const statusConfig = DEFENSE_STATUS_CONFIG[defense.status] || {
     label: defense.status,
     variant: "secondary" as const,
@@ -122,9 +122,11 @@ export function DefenseRegistrationForm({ skripsiId, onSuccess }: DefenseRegistr
 
   const handleRegister = async () => {
     try {
-      await register({ skripsi_id: skripsiId });
+      const formData = new FormData();
+      formData.append("skripsi_id", skripsiId);
+      await register(formData);
       onSuccess?.();
-    } catch (error) {
+    } catch {
       // Error handled by mutation toast
     }
   };

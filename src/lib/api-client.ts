@@ -8,9 +8,6 @@ class ApiClient {
   constructor() {
     this.http = axios.create({
       baseURL: API_URL,
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     this.setupInterceptors();

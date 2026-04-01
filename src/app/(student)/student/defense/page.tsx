@@ -1,83 +1,36 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Calendar as CalendarIcon, CheckCircle2, Loader2, Award, ArrowLeft, ShieldCheck, Info, Eye, X, FileText, FileCheck, Clock, MapPin, Users, Lock } from "lucide-react";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PageTitle } from "@/components/ui/page-title";
-
 import { Supervisor } from "@/types";
 import { useMyThesisQuery } from "@/features/proposal";
-import { useActiveDefenseQuery, useRegisterDefenseMutation } from "@/features/defense";
+import { useActiveDefenseQuery, useDefenseRegistration } from "@/features/defense";
 
 export default function DefenseRegistrationPage() {
     const router = useRouter();
     const { data: thesisData, isLoading: loadingThesis } = useMyThesisQuery();
     const { data: defense, isLoading: loadingDefense } = useActiveDefenseQuery();
     const thesis = thesisData?.current;
-    const { mutateAsync: registerDefense, isPending: loading } = useRegisterDefenseMutation();
 
-    const [draftFile, setDraftFile] = useState<File | null>(null);
-    const [draftUrl, setDraftUrl] = useState<string | null>(null);
-    const [turnitinFile, setTurnitinFile] = useState<File | null>(null);
-    const [turnitinUrl, setTurnitinUrl] = useState<string | null>(null);
+    const {
+        draftFile,
+        draftUrl,
+        turnitinFile,
+        turnitinUrl,
+        loading,
+        form,
+        handleFileChange,
+        removeFile,
+        handleRegister
+    } = useDefenseRegistration(thesis);
 
     const isAcc = (thesis?.supervisors?.length ?? 0) > 0 && thesis?.supervisors?.every((p: Supervisor) => p.acc_sidang);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'draft' | 'turnitin') => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            if (selectedFile.type !== 'application/pdf') {
-                toast.error('File harus dalam format PDF');
-                return;
-            }
-            const maxSize = type === 'draft' ? 10 : 5;
-            if (selectedFile.size > maxSize * 1024 * 1024) {
-                toast.error(`Ukuran file maksimal ${maxSize}MB`);
-                return;
-            }
-
-            const url = URL.createObjectURL(selectedFile);
-            if (type === 'draft') {
-                if (draftUrl) URL.revokeObjectURL(draftUrl);
-                setDraftFile(selectedFile);
-                setDraftUrl(url);
-            } else {
-                if (turnitinUrl) URL.revokeObjectURL(turnitinUrl);
-                setTurnitinFile(selectedFile);
-                setTurnitinUrl(url);
-            }
-        }
-    };
-
-    const removeFile = (type: 'draft' | 'turnitin') => {
-        if (type === 'draft') {
-            if (draftUrl) URL.revokeObjectURL(draftUrl);
-            setDraftFile(null);
-            setDraftUrl(null);
-        } else {
-            if (turnitinUrl) URL.revokeObjectURL(turnitinUrl);
-            setTurnitinFile(null);
-            setTurnitinUrl(null);
-        }
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!thesis) return;
-
-        try {
-            await registerDefense({ skripsi_id: thesis.id });
-            router.push("/student");
-        } catch (_error) {
-            // Error handled by mutation
-        }
-    };
 
     if (loadingThesis || loadingDefense) {
         return (
@@ -97,12 +50,15 @@ export default function DefenseRegistrationPage() {
             <div className="w-11/12 mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 <PageTitle title="Pendaftaran Sidang Skripsi" />
                 <div className="flex justify-between items-center">
-                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-                        Pendaftaran <span className="text-indigo-600">{isScheduled ? 'Terjadwal' : 'Terkirim'}</span>
-                    </h1>
-                    <Button variant="ghost" onClick={() => router.push("/student")} className="font-black text-[10px] uppercase tracking-widest gap-2 text-slate-400 hover:text-indigo-600">
-                        <ArrowLeft className="h-4 w-4" /> Dashboard
-                    </Button>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <div className="h-1 w-8 bg-indigo-500 rounded-full" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Pendaftaran Terkirim</span>
+                        </div>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+                            Sidang <span className="text-indigo-600">Skripsi</span>
+                        </h1>
+                    </div>
                 </div>
 
                 <div className="grid gap-8">
@@ -227,10 +183,6 @@ export default function DefenseRegistrationPage() {
                         <Button onClick={() => router.push("/student")} className="h-14 px-12 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1">
                             Kembali ke Dashboard
                         </Button>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center leading-relaxed">
-                            Siakad Skripsi • Informatics Engineering<br />
-                            Good Luck with your Final Defense!
-                        </p>
                     </div>
                 </div>
             </div>
@@ -245,7 +197,7 @@ export default function DefenseRegistrationPage() {
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <div className="h-1 w-8 bg-indigo-500 rounded-full" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Final Verification</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Restricted Access</span>
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
                             Sidang <span className="text-indigo-600">Skripsi</span>
@@ -263,10 +215,10 @@ export default function DefenseRegistrationPage() {
                             </div>
                             <div className="space-y-4 max-w-2xl px-4">
                                 <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-tight italic">
-                                    Pendaftaran <span className="text-indigo-600">Terkuci.</span>
+                                    Pendaftaran <span className="text-indigo-600">Terkunci.</span>
                                 </h2>
                                 <p className="text-slate-500 text-lg font-medium leading-relaxed">
-                                    Anda belum mendapatkan persetujuan (ACC) Sidang dari Dosen Pembimbing. Pastikan log bimbingan telah terpenuhi dan Anda telah lulus Seminar Proposal.
+                                    Anda belum mendapatkan persetujuan (ACC) Sidang Skripsi dari Dosen Pembimbing. Silakan tuntaskan seluruh sesi bimbingan terlebih dahulu untuk membuka akses pendaftaran ini.
                                 </p>
                             </div>
                         </div>
@@ -289,10 +241,6 @@ export default function DefenseRegistrationPage() {
                     </CardContent>
                     <div className="h-2 bg-gradient-to-r from-rose-400 via-indigo-600 to-emerald-400 w-full absolute bottom-0" />
                 </Card>
-                <div className="flex justify-between items-center px-4">
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">Academic Verification System • v1.0.4</p>
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">Siakad Skripsi</p>
-                </div>
             </div>
         );
     }
@@ -300,7 +248,6 @@ export default function DefenseRegistrationPage() {
     return (
         <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <PageTitle title="Pendaftaran Sidang Skripsi" />
-            {/* Minimalist Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -350,15 +297,21 @@ export default function DefenseRegistrationPage() {
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Draft Skripsi */}
                         <div className="space-y-4">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Draft Skripsi (PDF)</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Draft Skripsi (PDF) <span className="text-red-500">*</span></Label>
                             {!draftFile ? (
-                                <div className="group relative border-2 border-dashed border-slate-100 bg-slate-50/50 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-4 hover:border-indigo-600/30 hover:bg-indigo-50/30 transition-all cursor-pointer overflow-hidden text-center">
-                                    <div className="h-14 w-14 rounded-2xl bg-white shadow-lg border border-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500">
+                                <div className={cn(
+                                    "group relative border-2 border-dashed rounded-[2rem] p-8 flex flex-col items-center justify-center gap-4 transition-all cursor-pointer overflow-hidden text-center",
+                                    form.formState.errors.draft ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50/50" : "border-slate-100 bg-slate-50/50 hover:border-indigo-600/30 hover:bg-indigo-50/30"
+                                )}>
+                                    <div className={cn(
+                                        "h-14 w-14 rounded-2xl bg-white shadow-lg border flex items-center justify-center group-hover:scale-110 transition-transform duration-500",
+                                        form.formState.errors.draft ? "text-red-500 border-red-50" : "text-indigo-600 border-slate-50"
+                                    )}>
                                         <FileCheck className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-sm font-black text-slate-900">Pilih Draft Skripsi</p>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Maks 10MB • Final Draft</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Maks 5MB • Final Draft</p>
                                     </div>
                                     <input
                                         type="file"
@@ -400,14 +353,25 @@ export default function DefenseRegistrationPage() {
                                     </div>
                                 </div>
                             )}
+                            {form.formState.errors.draft && (
+                                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-4 animate-in slide-in-from-top-1">
+                                    {form.formState.errors.draft.message as string}
+                                </p>
+                            )}
                         </div>
 
                         {/* Hasil Turnitin */}
                         <div className="space-y-4">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Laporan Turnitin (PDF)</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Laporan Turnitin (PDF) <span className="text-red-500">*</span></Label>
                             {!turnitinFile ? (
-                                <div className="group relative border-2 border-dashed border-slate-100 bg-slate-50/50 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-4 hover:border-indigo-600/30 hover:bg-indigo-50/30 transition-all cursor-pointer overflow-hidden text-center">
-                                    <div className="h-14 w-14 rounded-2xl bg-white shadow-lg border border-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500">
+                                <div className={cn(
+                                    "group relative border-2 border-dashed rounded-[2rem] p-8 flex flex-col items-center justify-center gap-4 transition-all cursor-pointer overflow-hidden text-center",
+                                    form.formState.errors.turnitin ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50/50" : "border-slate-100 bg-slate-50/50 hover:border-indigo-600/30 hover:bg-indigo-50/30"
+                                )}>
+                                    <div className={cn(
+                                        "h-14 w-14 rounded-2xl bg-white shadow-lg border flex items-center justify-center group-hover:scale-110 transition-transform duration-500",
+                                        form.formState.errors.turnitin ? "text-red-500 border-red-50" : "text-indigo-600 border-slate-50"
+                                    )}>
                                         <FileCheck className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-1">
@@ -454,6 +418,11 @@ export default function DefenseRegistrationPage() {
                                     </div>
                                 </div>
                             )}
+                            {form.formState.errors.turnitin && (
+                                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-4 animate-in slide-in-from-top-1">
+                                    {form.formState.errors.turnitin.message as string}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -469,7 +438,7 @@ export default function DefenseRegistrationPage() {
                 </CardContent>
                 <CardFooter className="p-10 pt-0">
                     <Button
-                        onClick={handleRegister}
+                        onClick={form.handleSubmit(handleRegister)}
                         className="w-full h-16 rounded-[1.5rem] bg-indigo-950 hover:bg-black text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-100 transition-all gap-3"
                         disabled={loading}
                     >

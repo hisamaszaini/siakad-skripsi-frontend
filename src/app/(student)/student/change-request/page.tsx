@@ -23,7 +23,7 @@ export default function StudentChangeRequestPage() {
             await new Promise(resolve => setTimeout(resolve, 1500));
             toast.success("Permohonan perubahan berhasil dikirim. Menunggu tinjauan Prodi.");
             router.push("/student");
-        } catch (err) {
+        } catch {
             toast.error("Gagal mengirim permohonan.");
         } finally {
             setLoading(false);

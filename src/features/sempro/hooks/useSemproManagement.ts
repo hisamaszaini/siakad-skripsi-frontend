@@ -1,31 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useAllSemproQuery } from "./useSemproQueries";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export const useSemproManagement = (role?: "ADMIN" | "LECTURER") => {
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
-  const [filterStatus, setFilterStatus] = useState<string>("ALL");
-  const [page, setPage] = useState(1);
-  const [sortField, setSortField] = useState<string>("created_at");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const search = searchParams.get("q") || "";
+  const filterStatus = searchParams.get("status") || "ALL";
+  const selectedProdi = searchParams.get("prodi") || "ALL";
+  const page = Number(searchParams.get("page")) || 1;
+  const sortField = searchParams.get("sortField") || "created_at";
+  const sortOrder = (searchParams.get("sortOrder") as "asc" | "desc") || "desc";
+  const limit = Number(searchParams.get("limit")) || 10;
+
+  const [searchInput, setSearchInput] = useState(search);
+  const debouncedSearch = useDebounce(searchInput, 500);
+
+  const updateParams = useCallback((newParams: Record<string, string | number | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === undefined || value === "" || value === "ALL" || (key === "page" && value === 1)) {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    });
+    const queryString = params.toString();
+    router.push(`${pathname}${queryString ? `?${queryString}` : ""}`);
+  }, [searchParams, router, pathname]);
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      updateParams({ q: debouncedSearch, page: 1 });
+    }
+  }, [debouncedSearch, search, updateParams]);
 
   const { data, isLoading, error } = useAllSemproQuery({
-    q: debouncedSearch,
+    q: search,
     status: filterStatus === "ALL" ? "" : filterStatus,
+    prodi: selectedProdi === "ALL" ? "" : selectedProdi,
     page,
-    limit: 10,
+    limit,
     sortField,
     sortOrder,
   }, role);
 
   const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "desc" ? "asc" : "desc");
-    } else {
-      setSortField(field);
-      setSortOrder("desc");
-    }
+    const newOrder = sortField === field && sortOrder === "desc" ? "asc" : "desc";
+    updateParams({ sortField: field, sortOrder: newOrder });
   };
 
   return {
@@ -34,14 +59,18 @@ export const useSemproManagement = (role?: "ADMIN" | "LECTURER") => {
     totalPages: data?.totalPages || 0,
     isLoading,
     error,
-    search,
-    setSearch,
+    search: searchInput,
+    setSearch: setSearchInput,
     filterStatus,
-    setFilterStatus,
+    setFilterStatus: (status: string) => updateParams({ status, page: 1 }),
+    selectedProdi,
+    setSelectedProdi: (prodi: string) => updateParams({ prodi, page: 1 }),
     page,
-    setPage,
+    setPage: (newPage: number) => updateParams({ page: newPage }),
     sortField,
     sortOrder,
     handleSort,
+    limit,
+    setLimit: (v: number) => updateParams({ limit: v, page: 1 }),
   };
 };

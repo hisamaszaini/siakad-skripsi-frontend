@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { defenseService, DefenseParams } from "../services/defense.service";
 import { DefenseRegistration, PaginatedResponse, ApiResponse } from "@/types";
 import { AxiosResponse } from "axios";
@@ -16,6 +16,7 @@ export const useAllDefenseQuery = (params?: DefenseParams, role?: "ADMIN" | "LEC
   return useQuery<PaginatedResponse<DefenseRegistration>>({
     queryKey: [...defenseKeys.list(params), role],
     queryFn: () => defenseService.listDefense(params, role).then((res: AxiosResponse<ApiResponse<PaginatedResponse<DefenseRegistration>>>) => res.data.data),
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -31,6 +32,7 @@ export const useActiveDefenseQuery = () => {
   return useQuery<DefenseRegistration>({
     queryKey: defenseKeys.active(),
     queryFn: () => defenseService.getMyDefense().then((res: AxiosResponse<ApiResponse<DefenseRegistration>>) => res.data.data),
+    staleTime: 1000 * 60 * 5, // 5 menit
   });
 };
 

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { proposalService, ProposalParams } from "../services/proposal.service";
 import { PaginatedResponse, Proposal, Theme, MyThesisResponse, Period, ApiResponse } from "@/types";
@@ -17,6 +17,7 @@ export const useAllProposalsQuery = (params?: ProposalParams) => {
   return useQuery<PaginatedResponse<Proposal>>({
     queryKey: proposalKeys.list(params),
     queryFn: () => proposalService.getAllProposals(params).then((res: AxiosResponse<ApiResponse<PaginatedResponse<Proposal>>>) => res.data.data),
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -48,6 +49,7 @@ export const useMyThesisQuery = () => {
   return useQuery<MyThesisResponse>({
     queryKey: proposalKeys.detail("my-thesis"),
     queryFn: () => proposalService.getMyThesis().then((res: AxiosResponse<ApiResponse<MyThesisResponse>>) => res.data.data),
+    staleTime: 1000 * 60 * 5, // 5 menit
   });
 };
 
@@ -55,6 +57,7 @@ export const useProposalsForSupervisorQuery = (params?: ProposalParams) => {
   return useQuery<PaginatedResponse<Proposal>>({
     queryKey: proposalKeys.list({ ...params, type: "supervisor" }),
     queryFn: () => proposalService.getProposalsForSupervisor(params).then((res: AxiosResponse<ApiResponse<PaginatedResponse<Proposal>>>) => res.data.data),
+    placeholderData: keepPreviousData,
   });
 };
 

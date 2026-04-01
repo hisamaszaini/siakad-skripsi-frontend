@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { LucideIcon } from "lucide-react";
@@ -61,7 +61,7 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
                 />
             )}
             <main className={cn(
-                "pt-24 pb-12 transition-all duration-500 px-4 sm:px-6 lg:pl-80 lg:pr-10",
+                "pt-24 pb-12 transition-all duration-500 px-4 sm:px-6 lg:pl-80 lg:pr-10 print:p-0 print:m-0 print:pl-0 print:pr-0",
             )}>
                 <div>
                     {children}

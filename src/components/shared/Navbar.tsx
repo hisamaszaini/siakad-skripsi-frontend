@@ -25,7 +25,7 @@ export function Navbar() {
         try {
             await logout();
             toast.success("Berhasil logout");
-        } catch (error) {
+        } catch {
             toast.error("Gagal logout");
         }
     };

@@ -6,11 +6,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Loader2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { GraduationCap, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { loginAction } from "@/features/auth/services/auth.service";
 import { PageTitle } from "@/components/ui/page-title";
-import { cn } from "@/lib/utils";
 
 export default function StudentLoginPage() {
     const router = useRouter();

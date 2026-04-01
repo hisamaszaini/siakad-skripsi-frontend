@@ -8,7 +8,7 @@ import { AxiosError } from "axios";
 export const useRegisterDefenseMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { skripsi_id: string }) =>
+    mutationFn: (data: FormData) =>
       defenseService.registerDefense(data).then((res) => res.data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: defenseKeys.all });

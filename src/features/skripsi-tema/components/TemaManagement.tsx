@@ -6,6 +6,7 @@ import { useDeleteTheme } from "../hooks/useTemaMutation";
 import { useProdi } from "../hooks/useTemaQueries";
 import { TemaTable } from "./TemaTable";
 import { TemaModal } from "./TemaModal";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter, Loader2, GraduationCap, FileText, LucideIcon } from "lucide-react";
@@ -41,25 +42,20 @@ export function TemaManagement() {
     prodiFilter,
     setProdiFilter,
     sortField,
-    setSortField,
     sortOrder,
-    setSortOrder,
     totalItems,
+    page,
+    setPage,
+    totalPages,
+    handleSort,
+    limit,
+    setLimit,
   } = useTemaManagement();
 
   const { onOpen } = useTemaModal();
   const { data: prodiList = [] } = useProdi();
   const deleteMutation = useDeleteTheme();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  };
 
   const handleDelete = async () => {
     if (deleteConfirmId) {
@@ -71,14 +67,16 @@ export function TemaManagement() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-indigo-600" />
-            Manajemen Tema Skripsi
-          </h1>
-          <p className="text-slate-500 italic font-medium">
-            Kelola daftar tema skripsi yang tersedia untuk mahasiswa.
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-1 w-8 bg-indigo-600 rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Manajemen Tema Skripsi</span>
+            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+              Manajemen <span className="text-indigo-600">Tema Skripsi</span>
+            </h1>
+          </div>
         </div>
         <Button
           onClick={() => onOpen("CREATE")}
@@ -120,7 +118,7 @@ export function TemaManagement() {
                 })),
               ]}
               placeholder="Semua Jurusan"
-              className="w-full md:w-64 h-12 rounded-2xl border-slate-200 bg-slate-50/30"
+              className="w-full md:w-64 h-12 rounded-2xl border-slate-200 bg-slate-50/30 shadow-sm font-bold"
             />
           </div>
         </div>
@@ -146,6 +144,16 @@ export function TemaManagement() {
           )}
         </CardContent>
       </Card>
+
+      <DataTablePagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={setPage}
+        limit={limit}
+        onLimitChange={setLimit}
+        isLoading={isLoading}
+      />
 
       <TemaModal />
 

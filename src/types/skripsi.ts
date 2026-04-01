@@ -57,7 +57,8 @@ export interface GuidanceLog {
     skripsi_id: string;
     dosen_id: string;
     tanggal: string;
-    kegiatan: string;
+    materi: string;
+    saran: string;
     status: 'PENDING' | 'VERIFIED' | 'REJECTED';
     catatan: string | null;
     created_at: string;

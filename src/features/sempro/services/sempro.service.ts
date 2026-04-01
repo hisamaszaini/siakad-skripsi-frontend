@@ -8,10 +8,13 @@ export interface SemproParams {
   limit?: number;
   sortField?: string;
   sortOrder?: "asc" | "desc";
+  prodi?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const semproService = {
-  registerSempro: (data: { skripsi_id: string }) =>
+  registerSempro: (data: FormData) =>
     api.post<ApiResponse<SemproRegistration>>("/skripsi-sempro/daftar", data),
 
   getMySempro: () =>

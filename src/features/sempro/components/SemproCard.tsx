@@ -13,7 +13,7 @@ interface SemproCardProps {
   showStudent?: boolean;
 }
 
-export function SemproCard({ sempro, showStudent = false }: SemproCardProps) {
+export function SemproCard({ sempro }: SemproCardProps) {
   const statusConfig = SEMPRO_STATUS_CONFIG[sempro.status] || {
     label: sempro.status,
     variant: "secondary" as const,
@@ -122,9 +122,11 @@ export function SemproRegistrationForm({ skripsiId, onSuccess }: SemproRegistrat
 
   const handleRegister = async () => {
     try {
-      await register({ skripsi_id: skripsiId });
+      const formData = new FormData();
+      formData.append("skripsi_id", skripsiId);
+      await register(formData);
       onSuccess?.();
-    } catch (error) {
+    } catch {
       // Error handled by mutation toast
     }
   };

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { guidanceService, GuidanceParams } from "../services/guidance.service";
 import { ApiResponse, GuidanceLog, Proposal } from "@/types";
@@ -23,6 +23,7 @@ export const useGuidanceLogsQuery = (skripsiId?: string) => {
     queryKey: guidanceKeys.bySkripsi(skripsiId || ""),
     queryFn: () => guidanceService.getGuidanceLogs(skripsiId!).then((res: AxiosResponse<ApiResponse<{ proposal: Proposal; logs: GuidanceLog[] }>>) => res.data.data),
     enabled: !!skripsiId,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -30,6 +31,7 @@ export const useAllGuidanceLogsQuery = (params?: GuidanceParams) => {
   return useQuery<{ data: GuidanceLog[]; total: number; page: number; limit: number }>({
     queryKey: guidanceKeys.list(params),
     queryFn: () => guidanceService.getAllGuidanceLogsForLecturer(params).then((res: AxiosResponse<ApiResponse<{ data: GuidanceLog[]; total: number; page: number; limit: number }>>) => res.data.data),
+    placeholderData: keepPreviousData,
   });
 };
 

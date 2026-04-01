@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Eye, CheckCircle2, Clock, XCircle,
-  AlertCircle, Calendar, Loader2, ArrowUpDown, Award
+  AlertCircle, Calendar, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Award
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
@@ -14,7 +14,8 @@ import Link from "next/link";
 interface DefenseTableProps {
   data: DefenseRegistration[];
   isLoading: boolean;
-  _sort: { field: string; order: "asc" | "desc" };
+  sortField: string;
+  sortOrder: "asc" | "desc";
   onSort: (field: string) => void;
   role: "ADMIN" | "LECTURER";
 }
@@ -36,25 +37,64 @@ const statusBadge = (status: string) => {
   }
 };
 
-export function DefenseTable({ data, isLoading, _sort, onSort, role }: DefenseTableProps) {
+export function DefenseTable({ data, isLoading, sortField, sortOrder, onSort, role }: DefenseTableProps) {
   return (
     <div className="overflow-x-auto scrollbar-hide">
       <div className="min-w-[1000px]">
         <Table>
           <TableHeader className="bg-slate-50/50">
             <TableRow className="hover:bg-transparent border-none text-slate-400">
-              <TableHead className="w-[110px] h-14 font-black uppercase text-[10px] tracking-widest pl-8 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('nim')}>
-                <div className="flex items-center gap-1">NIM <ArrowUpDown className="h-3 w-3 opacity-50" /></div>
+              <TableHead className="w-[80px] h-14 font-black uppercase text-[10px] tracking-widest pl-8 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('created_at')}>
+                <div className="flex items-center gap-1">
+                  No
+                  {sortField === 'created_at' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="w-[110px] h-14 font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('nim')}>
+                <div className="flex items-center gap-1">
+                  NIM
+                  {sortField === 'nim' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </div>
               </TableHead>
               <TableHead className="font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('mahasiswa')}>
-                <div className="flex items-center gap-1">Mahasiswa <ArrowUpDown className="h-3 w-3 opacity-50" /></div>
+                <div className="flex items-center gap-1">
+                  Mahasiswa
+                  {sortField === 'mahasiswa' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </div>
               </TableHead>
               <TableHead className="font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('judul')}>
-                <div className="flex items-center gap-1">Judul Skripsi <ArrowUpDown className="h-3 w-3 opacity-50" /></div>
+                <div className="flex items-center gap-1">
+                  Judul Skripsi
+                  {sortField === 'judul' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </div>
               </TableHead>
-              <TableHead className="font-black uppercase text-[10px] tracking-widest">Waktu & Ruang</TableHead>
+              <TableHead className="font-black uppercase text-[10px] tracking-widest">Waktu</TableHead>
+              <TableHead className="font-black uppercase text-[10px] tracking-widest">Ruang</TableHead>
               <TableHead className="font-black uppercase text-[10px] tracking-widest cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => onSort('status')}>
-                <div className="flex items-center gap-1">Status <ArrowUpDown className="h-3 w-3 opacity-50" /></div>
+                <div className="flex items-center gap-1">
+                  Status
+                  {sortField === 'status' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="h-3 w-3 text-indigo-600" /> : <ArrowDown className="h-3 w-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </div>
               </TableHead>
               <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-8">Aksi</TableHead>
             </TableRow>
@@ -62,16 +102,17 @@ export function DefenseTable({ data, isLoading, _sort, onSort, role }: DefenseTa
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-72 text-center border-none">
+                <TableCell colSpan={8} className="h-72 text-center border-none">
                   <div className="flex flex-col items-center gap-2 justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                     <p className="text-sm text-slate-400 animate-pulse font-bold tracking-tight">Menyelaraskan Data...</p>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : data.length > 0 ? data.map((item) => (
+            ) : data.length > 0 ? data.map((item, index) => (
               <TableRow key={item.id} className="group hover:bg-slate-50/50 transition-colors border-slate-50">
-                <TableCell className="font-mono text-xs font-bold pl-8 py-5 text-slate-500">{item.nim}</TableCell>
+                <TableCell className="font-mono text-xs font-bold pl-8 py-5 text-slate-500">{index + 1}</TableCell>
+                <TableCell className="font-mono text-xs font-bold py-5 text-slate-500">{item.nim}</TableCell>
                 <TableCell className="font-bold text-slate-700 py-5">{item.nama_mahasiswa}</TableCell>
                 <TableCell className="max-w-xs py-5">
                   <p className="italic text-slate-500 text-sm truncate font-medium">{item.judul || "Belum ada judul"}</p>
@@ -82,12 +123,19 @@ export function DefenseTable({ data, isLoading, _sort, onSort, role }: DefenseTa
                       <span className="text-xs font-bold text-slate-600">
                         {format(new Date(item.tanggal), "dd MMM yyyy", { locale: idLocale })}
                       </span>
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-tight">
-                        {item.jam || "00:00"} WIB • {item.ruang || "TBA"}
+                      <span className="text-xs font-black text-indigo-500 uppercase tracking-tight">
+                        {format(new Date(item.tanggal), "HH:mm")} WIB
                       </span>
                     </div>
                   ) : (
-                    <span className="text-[10px] font-bold text-slate-300 uppercase italic">Belum Dijadwalkan</span>
+                    <span className="text-xs font-bold text-slate-300 uppercase italic">Belum Dijadwalkan</span>
+                  )}
+                </TableCell>
+                <TableCell className="py-5">
+                  {item.tanggal ? (
+                    <span className="text-xs font-bold text-slate-700">{item.ruang || "-"}</span>
+                  ) : (
+                    <span className="text-xs font-bold text-slate-300">-</span>
                   )}
                 </TableCell>
                 <TableCell className="py-5">{statusBadge(item.status)}</TableCell>
@@ -111,7 +159,7 @@ export function DefenseTable({ data, isLoading, _sort, onSort, role }: DefenseTa
                       {role === "ADMIN" ? (
                         item.status === "REGISTERED" ? "Jadwalkan" : "Detail"
                       ) : (
-                        item.status === "SCHEDULED" ? "Mulai Sidang" : "Detail"
+                        item.status === "SCHEDULED" ? "Beri Nilai" : "Detail"
                       )}
                     </Button>
                   </Link>
@@ -119,7 +167,7 @@ export function DefenseTable({ data, isLoading, _sort, onSort, role }: DefenseTa
               </TableRow>
             )) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-40 text-center text-slate-400 italic font-medium">
+                <TableCell colSpan={8} className="h-40 text-center text-slate-400 italic font-medium">
                   Belum ada data pendaftar sidang.
                 </TableCell>
               </TableRow>

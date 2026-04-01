@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -24,42 +24,57 @@ interface SingleSelectProps {
     loadingText?: string;
     disabled?: boolean;
     className?: string;
+    showSearch?: boolean;
 }
+
+const EMPTY_ARRAY: Option[] = [];
 
 export function SingleSelect({
     value,
     onChange,
     onSearch,
-    options: initialOptions = [],
+    options: initialOptions = EMPTY_ARRAY,
     placeholder = "Pilih opsi...",
     searchPlaceholder = "Cari opsi...",
     emptyText = "Opsi tidak ditemukan.",
     loadingText = "Sedang mencari...",
     disabled = false,
     className,
+    showSearch = true,
 }: SingleSelectProps) {
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [options, setOptions] = useState<Option[]>(initialOptions);
     const [searching, setSearching] = useState(false);
-
-    const [initialLoaded, setInitialLoaded] = useState(false);
+    const initialLoaded = useRef(false);
+    const isFirstRender = useRef(true);
     
     // Synchronize options prop with internal state
     useEffect(() => {
-        setOptions(initialOptions);
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        
+        // Only sync if initialOptions actually changed and is different from current options
+        // We use length and first/last element as a cheap way to detect potential changes 
+        // without a full deep comparison
+        if (initialOptions !== options) {
+            setOptions(initialOptions);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialOptions]);
 
     // Load initial options when popover first opens
     useEffect(() => {
-        if (open && !initialLoaded && onSearch && options.length === 0) {
-            setInitialLoaded(true);
+        if (open && !initialLoaded.current && onSearch && options.length === 0) {
+            initialLoaded.current = true;
             setSearching(true);
             onSearch("").then((results) => {
                 setOptions(results);
             }).catch(console.error).finally(() => setSearching(false));
         }
-    }, [open, initialLoaded, onSearch, options.length]);
+    }, [open, onSearch, options.length]);
 
     // Debounced search on query change (skip empty to avoid double-call on first open)
     useEffect(() => {
@@ -106,11 +121,13 @@ export function SingleSelect({
             />
             <PopoverContent className="w-(--anchor-width) p-0" align="start">
                 <Command shouldFilter={!onSearch}>
-                    <CommandInput
-                        placeholder={searchPlaceholder}
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                    />
+                    {showSearch && (
+                        <CommandInput
+                            placeholder={searchPlaceholder}
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                        />
+                    )}
                     <CommandList>
                         {searching && <CommandEmpty>{loadingText}</CommandEmpty>}
                         {!searching && options.length === 0 && (

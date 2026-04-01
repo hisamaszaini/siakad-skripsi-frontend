@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, ArrowRight, BookOpen, ShieldCheck, UserCheck, Users, Briefcase, Zap, Globe, Github } from "lucide-react";
+import { GraduationCap, ArrowRight, ShieldCheck, UserCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { cn } from "@/lib/utils";
